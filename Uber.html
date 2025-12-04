@@ -2,223 +2,139 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>統計系統</title>
+  <title>訂餐統計小工具</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <style>
-    body {
-      font-family: "微軟正黑體", sans-serif;
-      background-color: #d6d6d6;
-      padding: 20px;
-      max-width: 900px;
-      margin: 0 auto;
+    body{
+      font-family:"微軟正黑體",sans-serif;
+      background:#d6d6d6;
+      padding:20px;
+      max-width:900px;
+      margin:0 auto;
     }
-    h1, h2 {
-      color: #333;
-      text-align: center;
+    h1,h2{ text-align:center; color:#333; }
+    .card{
+      background:#fff;
+      padding:18px;
+      border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,.1);
+      margin-bottom:16px;
     }
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+    .input-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:center;
+      align-items:center;
     }
-    .input-group {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
+    input,select,textarea,button{
+      font-family:inherit;
+      font-size:14px;
+      padding:8px;
+      border-radius:4px;
+      border:1px solid #ccc;
     }
-    input, select, button, textarea {
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-family: inherit;
+    textarea{ width:100%; box-sizing:border-box; }
+    button{
+      background:#81afa7;
+      color:#fff;
+      border:none;
+      cursor:pointer;
+      transition:.2s;
     }
-    button {
-      background-color: #81afa7;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: 0.3s;
+    button:hover{ background:#328779; }
+    .btn-danger{ background:#e8727e; }
+    .btn-danger:hover{ background:#891924; }
+    .btn-sm{ padding:3px 6px; font-size:12px; }
+    .btn-edit{ background:#ffc107; color:#212529; }
+    .btn-edit:hover{ background:#e0a800; }
+    .btn-del{ background:#e8727e; }
+    .btn-del:hover{ background:#891924; }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+      font-size:13px;
     }
-    button:hover {
-      background-color: #328779;
+    th,td{
+      border-bottom:1px solid #ddd;
+      padding:6px 8px;
+      text-align:left;
+      vertical-align:top;
     }
-    button.reset {
-      background-color: #e8727e;
-      margin-left: auto;
-      display: block;
-    }
-    button.reset:hover {
-      background-color: #891924;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      padding: 8px 10px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-      font-size: 14px;
-    }
-    th {
-      background-color: #a1a279;
-      color: white;
-    }
-    tr:hover {
-      background-color: #f1f1f1;
-    }
-    .total-box {
-      font-size: 1.1em;
-      font-weight: bold;
-      text-align: right;
-      color: #d9534f;
-      margin-top: 10px;
-    }
-    .flex-row {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    .flex-1 {
-      flex: 1;
-      min-width: 300px;
-    }
-    .btn-sm {
-      padding: 4px 8px;
-      font-size: 12px;
-    }
-    .btn-edit {
-      background-color: #ffc107;
-      color: #212529;
-    }
-    .btn-edit:hover {
-      background-color: #e0a800;
-    }
-    .btn-delete {
-      background-color: #e8727e;
-    }
-    .btn-delete:hover {
-      background-color: #891924;
+    th{ background:#a1a279; color:#fff; }
+    tr:hover{ background:#f7f7f7; }
+    .total-box{
+      text-align:right;
+      font-weight:bold;
+      color:#d9534f;
     }
   </style>
 </head>
 <body>
 
-  <h1>🍱 統計小程式</h1>
+<h1>🍱 訂餐統計小工具</h1>
 
-  <!-- 第一步：設定菜單品項 -->
-  <div class="card">
-    <h2>① 設定菜單品項（名稱＋金額）</h2>
-
-    <!-- 手動新增品項 -->
-    <div class="input-group">
-      <input
-        type="text"
-        id="menuNameInput"
-        placeholder="輸入品項名稱（例：排骨飯）"
-        autocomplete="off"
-      >
-      <input
-        type="number"
-        id="menuPriceInput"
-        placeholder="單價（元）"
-        min="0"
-        style="width: 120px;"
-      >
-      <button id="addMenuItemBtn">➕ 新增品項</button>
-      <button id="clearMenuBtn" class="btn-delete">🗑️ 清除所有品項</button>
-    </div>
-
-    <!-- 原始文字貼上（整頁複製用） -->
-    <div style="margin-top:12px;">
-      <label style="font-size:14px; display:block; margin-bottom:4px;">
-        從 UberEats / 其他網站整頁複製的文字，貼在這裡（我會幫你整理出 品項+金額）：
-      </label>
-      <textarea
-        id="rawTextInput"
-        rows="4"
-        style="width:100%; font-size:14px; padding:8px;"
-        placeholder="在店家頁面 ⌘+A 全選 → ⌘+C 複製 → 貼到這裡，再按『整理成菜單文字』"
-      ></textarea>
-      <div style="margin-top:8px; text-align:right;">
-        <button type="button" id="parseRawBtn">🧹 整理成菜單文字</button>
-      </div>
-    </div>
-
-    <!-- 匯入菜單文字（每行：品項,金額） -->
-    <div style="margin-top:12px;">
-      <label style="font-size:14px; display:block; margin-bottom:4px;">
-        或快速匯入（每行：品項,金額）：
-      </label>
-      <textarea
-        id="menuImportInput"
-        rows="4"
-        style="width:100%; font-size:14px; padding:8px;"
-        placeholder="例如：
-排骨飯,100
-雞腿飯,120
-紅茶,30"
-      ></textarea>
-      <div style="margin-top:8px; text-align:right;">
-        <button type="button" id="importMenuBtn">⏬ 匯入菜單文字</button>
-      </div>
-    </div>
-
-    <table id="menuTable">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>品項名稱</th>
-          <th>單價</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+<!-- ① 菜單設定 -->
+<div class="card">
+  <h2>① 菜單品項</h2>
+  <div class="input-row">
+    <input id="menuNameInput" placeholder="品項名稱 (例：蒜香雪花牛肉幫米短法)" style="flex:1 1 160px;">
+    <input id="menuPriceInput" type="number" min="0" placeholder="價格" style="width:110px;">
+    <button id="addMenuItemBtn">➕ 新增品項</button>
+    <button id="clearMenuBtn" class="btn-danger">🗑 清除菜單</button>
   </div>
 
-  <!-- 第二步：輸入訂單（選姓名＋品項＋份數） -->
-  <div class="card">
-    <h2>② 輸入訂單（選擇姓名與品項）</h2>
-    <div class="input-group">
-      <input
-        type="text"
-        id="username"
-        placeholder="輸入姓名 (例如: 小明)"
-        autocomplete="off"
-      >
-      <select id="menuSelect">
-        <!-- 由 JS 依照菜單自動產生 -->
-      </select>
-      <input
-        type="number"
-        id="qtyInput"
-        min="1"
-        value="1"
-        style="width:80px;"
-        placeholder="份數"
-      >
-      <button id="addOrderBtn" disabled>➕ 加入訂單</button>
+  <div style="margin-top:10px;">
+    <small>快速匯入（每行：品項,金額，例如：排骨飯,100）</small>
+    <textarea id="menuImportInput" rows="3"></textarea>
+    <div style="text-align:right;margin-top:6px;">
+      <button id="importMenuBtn">⏬ 匯入菜單文字</button>
     </div>
+  </div>
 
-    <!-- 從購物車貼文字自動匯入 -->
-    <div style="margin-top:16px;">
-      <h2 style="font-size:18px; text-align:left; margin-bottom:6px;">③ 從購物車文字自動匯入訂單</h2>
-      <p style="font-size:13px; color:#555; margin-top:0;">
-        在 UberEats 訂單畫面：長按文字 → 全選 → 複製，貼到下方，再按「解析購物車文字」即可。
-      </p>
-      <textarea
-        id="cartTextInput"
-        rows="6"
-        style="width:100%; font-size:14px; padding:8px;"
-        placeholder="例：
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>品項名稱</th><th>單價</th><th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="menuTbody"></tbody>
+  </table>
+</div>
+
+<!-- ② 訂單輸入 -->
+<div class="card">
+  <h2>② 輸入訂單</h2>
+  <div class="input-row">
+    <input id="username" placeholder="姓名 (例：莞婷)" style="flex:1 1 120px;">
+    <select id="menuSelect" style="flex:2 1 220px;"></select>
+    <input id="qtyInput" type="number" min="1" value="1" style="width:70px;">
+    <button id="addOrderBtn" disabled>➕ 加入訂單</button>
+  </div>
+
+  <div style="margin-top:12px;">
+    <small>貼上 UberEats 購物車文字（從「莞婷 (您本人)」或「訪客1」那邊開始全選複製）：</small>
+    <textarea id="cartTextInput" rows="7"
+      placeholder="例：
+莞婷 (您本人)
+2 份餐點
+
+1
+蒜香雪花牛肉幫米短法
+$150.00
+加辣選擇
+微辣
+
+1
+舒肥低脂嫩雞幫米短法
+$135.00
+加辣選擇
+小辣
+備註：不加香菜
+
 訪客1
-正在新增商品・1 份餐點
+1 份餐點
 
 1
 野菜蜜汁燒肉幫米短法
@@ -226,810 +142,571 @@ $200.00
 加辣選擇
 大辣
 加料選擇 ($65.00)
-沙嗲牛"
-      ></textarea>
-      <div style="margin-top:8px; text-align:right;">
-        <button type="button" id="parseCartBtn">🧾 解析購物車文字並加入訂單</button>
-      </div>
+沙嗲牛"></textarea>
+    <div style="text-align:right;margin-top:6px;">
+      <button id="parseCartBtn">🧾 解析購物車文字並加入訂單</button>
     </div>
   </div>
+</div>
 
-  <!-- 訂單明細 -->
-  <div class="card">
-    <h2>📝 訂單明細（可修改 / 刪除）</h2>
-    <table id="orderTable">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>姓名</th>
-          <th>品項</th>
-          <th>單價</th>
-          <th>數量</th>
-          <th>小計</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+<!-- ③ 訂單明細 -->
+<div class="card">
+  <h2>③ 訂單明細</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>姓名</th><th>品項</th><th>單價</th><th>數量</th><th>小計</th><th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="orderTbody"></tbody>
+  </table>
+</div>
+
+<!-- ④ 總計 -->
+<div class="card">
+  <h2>總計概況</h2>
+  <div id="grandTotalDisplay" class="total-box">目前尚未點餐</div>
+</div>
+
+<!-- ⑤ 人員統計 -->
+<div class="card">
+  <h2>👤 人員統計 (誰點了什麼)</h2>
+  <div class="input-row" style="justify-content:flex-end;margin-bottom:6px;">
+    <label style="font-size:13px;">
+      折扣：
+      <input id="discountInput" type="number" min="0" max="100" value="100" style="width:60px;"> %
+      <span style="font-size:12px;color:#666;">（100=原價，90=九折）</span>
+    </label>
   </div>
+  <table>
+    <thead>
+      <tr>
+        <th>姓名</th><th>品項內容</th><th>總份數</th><th>總金額</th><th>折扣後</th>
+      </tr>
+    </thead>
+    <tbody id="personTbody"></tbody>
+  </table>
+</div>
 
-  <!-- 總計概況 -->
-  <div class="card">
-    <h2>📊 總計概況</h2>
-    <div class="total-box" id="grandTotalDisplay">
-      目前尚未點餐
-    </div>
-  </div>
+<!-- ⑥ 餐點統計 -->
+<div class="card">
+  <h2>🍗 餐點統計 (店家叫貨用)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>品項名稱</th><th>總數量</th><th>總金額</th>
+      </tr>
+    </thead>
+    <tbody id="itemTbody"></tbody>
+  </table>
+</div>
 
-  <!-- 統計區：人員統計（獨立一整排） -->
-  <div class="card">
-    <h2>👤 購物車統計 (誰點了什麼)</h2>
+<button id="resetBtn" class="btn-danger" style="display:block;margin-left:auto;">
+  ⚠ 清除所有訂單重來（保留菜單）
+</button>
 
-    <!-- 折扣設定 -->
-    <div class="input-group" style="justify-content:flex-end; margin-bottom:8px;">
-      <label style="font-size:14px;">
-        折扣：
-        <input
-          type="number"
-          id="discountInput"
-          min="0"
-          max="100"
-          value="50"
-          style="width:70px;"
-        > %
-        <span style="color:#666; font-size:12px;">（100=不打折、90=九折）</span>
-      </label>
-    </div>
+<script>
+(function(){
+  const menuItems = [];          // {name, price}
+  const orders    = [];          // {name, item, price, qty, detail}
+  let menuEditingIndex = -1;
+  let orderEditingIndex = -1;
 
-    <table id="personTable">
-      <thead>
-        <tr>
-          <th>姓名</th>
-          <th>品項內容</th>
-          <th>總份數</th>
-          <th>總金額</th>
-          <th>折扣後金額</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  // DOM
+  const menuNameInput  = document.getElementById('menuNameInput');
+  const menuPriceInput = document.getElementById('menuPriceInput');
+  const addMenuItemBtn = document.getElementById('addMenuItemBtn');
+  const clearMenuBtn   = document.getElementById('clearMenuBtn');
+  const menuImportInput= document.getElementById('menuImportInput');
+  const importMenuBtn  = document.getElementById('importMenuBtn');
+  const menuTbody      = document.getElementById('menuTbody');
+  const menuSelect     = document.getElementById('menuSelect');
 
-  <!-- 統計區：餐點統計（另外一整排） -->
-  <div class="card">
-    <h2>🍗 餐點統計 (店家叫貨用)</h2>
-    <table id="itemTable">
-      <thead>
-        <tr>
-          <th>品項名稱</th>
-          <th>總數量</th>
-          <th>總金額</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  const nameInput      = document.getElementById('username');
+  const qtyInput       = document.getElementById('qtyInput');
+  const addOrderBtn    = document.getElementById('addOrderBtn');
 
-  <button class="reset" id="resetBtn">⚠️ 清除所有訂單重來（菜單保留）</button>
+  const cartTextInput  = document.getElementById('cartTextInput');
+  const parseCartBtn   = document.getElementById('parseCartBtn');
 
-  <script>
-    (() => {
-      'use strict';
+  const orderTbody     = document.getElementById('orderTbody');
+  const grandTotalEl   = document.getElementById('grandTotalDisplay');
+  const personTbody    = document.getElementById('personTbody');
+  const itemTbody      = document.getElementById('itemTbody');
+  const discountInput  = document.getElementById('discountInput');
+  const resetBtn       = document.getElementById('resetBtn');
 
-      // 菜單資料：每筆 {name, price}
-      const menuItems = [];
-      // 訂單資料：每筆 {name, item, price, qty, detail}
-      // detail 用來放：加辣、加料、備註等（例如：微辣 / 不加香菜 / 沙嗲牛 +65）
-      const orders = [];
+  const roundHalf = v => Math.floor(v + 0.5);
 
-      let editingIndex = -1;      // 訂單是否在編輯中
-      let menuEditingIndex = -1;  // 菜單是否在編輯中
+  /* ---------- 菜單 ---------- */
+  function renderMenu(){
+    if (!menuItems.length){
+      menuTbody.innerHTML =
+        '<tr><td colspan="4" style="text-align:center;color:#888;">尚無品項，請先新增</td></tr>';
+      menuSelect.innerHTML = '<option disabled selected>請先新增品項</option>';
+      addOrderBtn.disabled = true;
+      return;
+    }
+    menuTbody.innerHTML = menuItems.map((m,i)=>`
+      <tr>
+        <td>${i+1}</td>
+        <td>${m.name}</td>
+        <td>$${m.price}</td>
+        <td>
+          <button class="btn-sm btn-edit" data-idx="${i}" data-action="editMenu">修改</button>
+          <button class="btn-sm btn-del"  data-idx="${i}" data-action="delMenu">刪除</button>
+        </td>
+      </tr>`).join('');
 
-      // DOM 元素 --------------------------------
-      const menuNameInput   = document.getElementById('menuNameInput');
-      const menuPriceInput  = document.getElementById('menuPriceInput');
-      const addMenuItemBtn  = document.getElementById('addMenuItemBtn');
-      const clearMenuBtn    = document.getElementById('clearMenuBtn');
-      const rawTextInput    = document.getElementById('rawTextInput');
-      const parseRawBtn     = document.getElementById('parseRawBtn');
-      const menuImportInput = document.getElementById('menuImportInput');
-      const importMenuBtn   = document.getElementById('importMenuBtn');
-      const menuTbody       = document.querySelector('#menuTable tbody');
-      const menuSelect      = document.getElementById('menuSelect');
+    menuSelect.innerHTML = menuItems
+      .map(m=>`<option value="${m.name}|${m.price}">${m.name} ($${m.price})</option>`)
+      .join('');
+    addOrderBtn.disabled = false;
+  }
 
-      const nameInput       = document.getElementById('username');
-      const qtyInput        = document.getElementById('qtyInput');
-      const addOrderBtn     = document.getElementById('addOrderBtn');
-      const resetBtn        = document.getElementById('resetBtn');
+  function resetMenuForm(){
+    menuNameInput.value = '';
+    menuPriceInput.value = '';
+    addMenuItemBtn.textContent = '➕ 新增品項';
+    menuEditingIndex = -1;
+  }
 
-      const cartTextInput   = document.getElementById('cartTextInput');
-      const parseCartBtn    = document.getElementById('parseCartBtn');
+  function handleSubmitMenuItem(){
+    const name  = menuNameInput.value.trim();
+    const price = Number(menuPriceInput.value);
+    if (!name) return alert('請輸入品項名稱');
+    if (Number.isNaN(price) || price < 0) return alert('請輸入正確單價');
 
-      const orderTbody      = document.querySelector('#orderTable tbody');
-      const grandTotalEl    = document.getElementById('grandTotalDisplay');
-      const personTbody     = document.querySelector('#personTable tbody');
-      const itemTbody       = document.querySelector('#itemTable tbody');
-
-      const discountInput   = document.getElementById('discountInput');
-
-      // 工具：四捨五入（0.5 就 +1）
-      function roundHalfUp(value) {
-        return Math.floor(value + 0.5);
-      }
-
-      // 事件綁定 --------------------------------
-      addMenuItemBtn.addEventListener('click', handleSubmitMenuItem);
-      menuPriceInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') handleSubmitMenuItem();
-      });
-
-      importMenuBtn.addEventListener('click', handleImportMenu);
-      parseRawBtn.addEventListener('click', handleParseRawText);
-
-      clearMenuBtn.addEventListener('click', () => {
-        if (!confirm('確定要刪除所有菜單品項嗎？（不影響已建立的訂單）')) return;
-        menuItems.length = 0;
-        menuEditingIndex = -1;
-        resetMenuForm();
-        renderMenu();
-      });
-
-      addOrderBtn.addEventListener('click', handleSubmitOrder);
-      nameInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') handleSubmitOrder();
-      });
-      qtyInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') handleSubmitOrder();
-      });
-
-      discountInput.addEventListener('input', () => {
-        renderAll();
-      });
-
-      resetBtn.addEventListener('click', () => {
-        if (!confirm('確定要清除所有訂單嗎？菜單品項會保留。')) return;
-        orders.length = 0;
-        editingIndex = -1;
-        resetOrderForm();
-        renderAll();
-      });
-
-      menuTbody.addEventListener('click', (e) => {
-        const target = e.target;
-        if (!(target instanceof HTMLElement)) return;
-
-        const indexStr = target.dataset.index;
-        if (indexStr == null) return;
-        const index = Number(indexStr);
-        if (Number.isNaN(index)) return;
-
-        if (target.classList.contains('btn-menu-edit')) {
-          startEditMenuItem(index);
-        } else if (target.classList.contains('btn-menu-delete')) {
-          if (!confirm('確定要刪除此品項嗎？（已下單的不會被刪除）')) return;
-          menuItems.splice(index, 1);
-          if (menuEditingIndex === index) {
-            menuEditingIndex = -1;
-            resetMenuForm();
-          }
-          renderMenu();
+    if (menuEditingIndex === -1){
+      menuItems.push({name, price});
+    }else{
+      const old = menuItems[menuEditingIndex];
+      menuItems[menuEditingIndex] = {name, price};
+      // 同步既有訂單
+      orders.forEach(o=>{
+        if (o.item === old.name && o.price === old.price){
+          o.item = name;
+          o.price = price;
         }
       });
-
-      orderTbody.addEventListener('click', (e) => {
-        const target = e.target;
-        if (!(target instanceof HTMLElement)) return;
-
-        const idxStr = target.dataset.index;
-        if (idxStr == null) return;
-        const index = Number(idxStr);
-        if (Number.isNaN(index)) return;
-
-        if (target.classList.contains('btn-edit')) {
-          startEditOrder(index);
-        } else if (target.classList.contains('btn-delete')) {
-          deleteOrder(index);
-        }
-      });
-
-      parseCartBtn.addEventListener('click', handleParseCartOrders);
-
-      // 共用判斷函式 ------------------------------
-      function isCartNameLine(line) {
-        if (!line) return false;
-        if (line.includes('您本人')) return true;
-        if (/^訪客\d+/.test(line)) return true;
-        return false;
-      }
-
-      function isQtyLine(lines, idx) {
-        const l = lines[idx];
-        if (!/^\d+$/.test(l)) return false;
-        const next = lines[idx + 1] || '';
-        const priceLine = lines[idx + 2] || '';
-        if (!next) return false;
-        if (!/\$[0-9]/.test(priceLine)) return false;
-        return true;
-      }
-
-      function isBoundaryLine(line) {
-        if (!line) return false;
-        if (isCartNameLine(line)) return true;
-        if (/份餐點/.test(line)) return true;
-        return false;
-      }
-
-      // 解析購物車文字成訂單物件陣列 ----------------
-      function parseCartTextToOrders(text) {
-        const rawLines = text.split(/\r?\n/);
-        const lines = rawLines.map(l => l.trim()).filter(l => l.length);
-        const result = [];
-        let currentName = null;
-
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-
-          // 姓名行：訪客1、莞婷 (您本人)
-          if (isCartNameLine(line)) {
-            currentName = line.replace(/\s*\(您本人\)\s*/, '');
-            continue;
-          }
-
-          // 「正在新增商品・1 份餐點」之類
-          if (/份餐點/.test(line)) continue;
-
-          // 數量行
-          if (isQtyLine(lines, i)) {
-            const qty = parseInt(lines[i], 10) || 1;
-            const itemName = lines[i + 1] || '';
-            const priceLine = lines[i + 2] || '';
-            const m = priceLine.match(/\$([0-9.,]+)/);
-            const basePrice = m ? parseFloat(m[1].replace(/,/g, '')) : 0;
-
-            let j = i + 3;
-            let detailParts = [];
-            let extraPriceTotal = 0;
-
-            while (j < lines.length) {
-              const l2 = lines[j];
-
-              if (isBoundaryLine(l2) || isQtyLine(lines, j)) break;
-
-              // 加辣選擇 + 下一行（小辣 / 大辣）
-              if (l2.includes('加辣選擇')) {
-                const level = lines[j + 1] || '';
-                if (level) detailParts.push(`加辣：${level}`);
-                j += 2;
-                continue;
-              }
-
-              // 加料選擇 ($65.00) + 下一行（沙嗲牛）
-              const addonMatch = l2.match(/加料選擇.*\(\$([0-9.,]+)\)/);
-              if (addonMatch) {
-                const addonPrice = parseFloat(addonMatch[1].replace(/,/g, '')) || 0;
-                const addonName = lines[j + 1] || '';
-                extraPriceTotal += addonPrice;
-                if (addonName) {
-                  detailParts.push(`加料：${addonName} +${addonPrice}`);
-                } else {
-                  detailParts.push(`加料 +${addonPrice}`);
-                }
-                j += 2;
-                continue;
-              }
-
-              // 備註：不加香菜
-              if (/^備註/.test(l2)) {
-                detailParts.push(l2);
-                j++;
-                continue;
-              }
-
-              j++;
-            }
-
-            const totalPrice = Math.round(basePrice + extraPriceTotal);
-            const detail = detailParts.join(' / ');
-            const name = currentName || '未命名';
-
-            result.push({
-              name,
-              item: itemName,
-              price: totalPrice,
-              qty,
-              detail
-            });
-
-            i = j - 1; // 跳到這個 block 結尾
-          }
-        }
-
-        return result;
-      }
-
-      // 功能：菜單 --------------------------------
-      function handleSubmitMenuItem() {
-        const name = menuNameInput.value.trim();
-        const price = Number(menuPriceInput.value);
-
-        if (!name) {
-          alert('請輸入品項名稱！');
-          menuNameInput.focus();
-          return;
-        }
-        if (Number.isNaN(price) || price < 0) {
-          alert('請輸入正確的單價（>=0）！');
-          menuPriceInput.focus();
-          return;
-        }
-
-        if (menuEditingIndex === -1) {
-          // 新增模式
-          menuItems.push({ name, price });
-        } else {
-          // 編輯模式：更新菜單，並同步更新已存在的訂單
-          const oldItem = menuItems[menuEditingIndex];
-          const oldName = oldItem.name;
-          const oldPrice = oldItem.price;
-
-          menuItems[menuEditingIndex] = { name, price };
-
-          for (const o of orders) {
-            if (o.item === oldName && o.price === oldPrice) {
-              o.item = name;
-              o.price = price;
-            }
-          }
-
-          menuEditingIndex = -1;
-        }
-
-        resetMenuForm();
-        renderMenu();
-        renderAll();
-      }
-
-      function handleImportMenu() {
-        const text = menuImportInput.value.trim();
-        if (!text) {
-          alert('請先在「匯入菜單文字」區貼上內容。');
-          return;
-        }
-
-        const lines = text.split('\n');
-        let addedCount = 0;
-
-        for (const raw of lines) {
-          const line = raw.trim();
-          if (!line) continue;
-
-          const parts = line.split(/[,，\t]/);
-          if (parts.length < 2) continue;
-
-          const name = parts[0].trim();
-          const priceStr = parts[1].trim();
-          const price = Number(priceStr);
-
-          if (!name || Number.isNaN(price)) continue;
-
-          menuItems.push({ name, price });
-          addedCount++;
-        }
-
-        if (addedCount === 0) {
-          alert('匯入失敗，請確認每行格式為：品項,金額 例如「排骨飯,100」。');
-          return;
-        }
-
-        alert(`已匯入 ${addedCount} 筆品項。`);
-        menuImportInput.value = '';
-        menuEditingIndex = -1;
-        resetMenuForm();
-        renderMenu();
-      }
-
-      // 🔹 從原始整頁文字解析出「品項,金額」列表（店家菜單）
-      function handleParseRawText() {
-        const text = rawTextInput.value.trim();
-        if (!text) {
-          alert('請先把 UberEats / 網頁整頁文字貼到上面的框框。');
-          return;
-        }
-
-        const lines = text.split(/\r?\n/)
-          .map(l => l.trim())
-          .filter(Boolean);
-
-        const blacklist = /外送|外送費|外帶|服務費|運費|免運|優惠|折扣|常見問題|Uber Eats|稅金|稅費|訂單|評論|評分|使用條款|隱私|支援|客服|登入|註冊|語言|版權|Copyright|您專屬的推薦商品/i;
-
-        const priceRegex = /(NT\$|\$|＄)\s*([0-9][0-9.,]*)/;
-
-        const results = [];
-        const seen = new Set();
-
-        function looksLikeName(str) {
-          if (!str) return false;
-          if (priceRegex.test(str)) return false;
-          if (blacklist.test(str)) return false;
-          if (/^\d+(\.\d+)?\s*%/.test(str)) return false;       // 95%
-          if (/^\d+\s*\(.*\)$/.test(str)) return false;         // 497 (xxx)
-          if (/^[•·\-\s]+$/.test(str)) return false;            // 只有符號
-          if (!/[\u4e00-\u9fffA-Za-z]/.test(str)) return false; // 至少要有中文字或英文
-          return true;
-        }
-
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-          const m = line.match(priceRegex);
-          if (!m) continue;
-          if (blacklist.test(line)) continue;
-
-          let priceStr = m[2].replace(/[^\d.]/g, '');
-          if (!priceStr) continue;
-          let priceNum = parseFloat(priceStr);
-          if (Number.isNaN(priceNum)) continue;
-          const price = Math.round(priceNum);
-
-          let name = null;
-
-          // 往上找品名
-          for (let j = i - 1; j >= 0; j--) {
-            const cand = lines[j];
-            if (looksLikeName(cand)) {
-              name = cand.trim();
-              break;
-            }
-          }
-
-          // 若往上沒找到，往下找一次（備援）
-          if (!name) {
-            for (let j = i + 1; j < lines.length; j++) {
-              const cand = lines[j];
-              if (looksLikeName(cand)) {
-                name = cand.trim();
-                break;
-              }
-            }
-          }
-
-          if (!name) continue;
-
-          const key = `${name}|${price}`;
-          if (seen.has(key)) continue;
-          seen.add(key);
-
-          results.push(`${name},${price}`);
-        }
-
-        if (!results.length) {
-          alert('沒有解析到任何「品項＋金額」。可能該頁面格式比較特別，或尚未把菜單全部滑出來。');
-          return;
-        }
-
-        menuImportInput.value = results.join('\n');
-        alert(`已從原始文字整理出 ${results.length} 筆品項，請確認後按「⏬ 匯入菜單文字」。`);
-      }
-
-      function startEditMenuItem(index) {
-        const item = menuItems[index];
-        menuEditingIndex = index;
-
-        menuNameInput.value = item.name;
-        menuPriceInput.value = item.price;
-        addMenuItemBtn.textContent = '💾 儲存品項修改';
-        menuNameInput.focus();
-      }
-
-      function resetMenuForm() {
-        menuNameInput.value = '';
-        menuPriceInput.value = '';
-        addMenuItemBtn.textContent = '➕ 新增品項';
-      }
-
-      function renderMenu() {
-        if (menuItems.length === 0) {
-          menuTbody.innerHTML =
-            '<tr><td colspan="4" style="text-align:center;color:#888;">尚無品項，請先新增。</td></tr>';
-        } else {
-          const rows = menuItems.map((m, index) => `
-            <tr>
-              <td>${index + 1}</td>
-              <td>${m.name}</td>
-              <td>$${m.price}</td>
-              <td>
-                <button type="button" class="btn-sm btn-edit btn-menu-edit" data-index="${index}">修改</button>
-                <button type="button" class="btn-sm btn-delete btn-menu-delete" data-index="${index}">刪除</button>
-              </td>
-            </tr>
-          `);
-          menuTbody.innerHTML = rows.join('');
-        }
-
-        menuSelect.innerHTML = '';
-        if (menuItems.length === 0) {
-          const opt = document.createElement('option');
-          opt.value = '';
-          opt.textContent = '請先在上方新增品項';
-          opt.disabled = true;
-          opt.selected = true;
-          menuSelect.appendChild(opt);
-          addOrderBtn.disabled = true;
-        } else {
-          addOrderBtn.disabled = false;
-          menuItems.forEach((m) => {
-            const opt = document.createElement('option');
-            opt.value = `${m.name}|${m.price}`;
-            opt.textContent = `${m.name} ($${m.price})`;
-            menuSelect.appendChild(opt);
-          });
-        }
-      }
-
-      // 功能：訂單 --------------------------------
-      function handleSubmitOrder() {
-        const name = nameInput.value.trim();
-        const qty = parseInt(qtyInput.value, 10);
-
-        if (!name) {
-          alert('請輸入姓名！');
-          nameInput.focus();
-          return;
-        }
-        if (menuItems.length === 0 || !menuSelect.value) {
-          alert('請先在第一步驟新增品項！');
-          return;
-        }
-        if (Number.isNaN(qty) || qty <= 0) {
-          alert('請輸入正確的份數（>=1）！');
-          qtyInput.focus();
-          return;
-        }
-
-        const [itemName, itemPrice] = menuSelect.value.split('|');
-        const price = Number(itemPrice);
-        if (!itemName || Number.isNaN(price)) {
-          alert('品項資料有誤，請重新選擇。');
-          return;
-        }
-
-        // 若是編輯模式，保留原本的 detail（加料/備註等）
-        let detail = '';
-        if (editingIndex !== -1 && orders[editingIndex]) {
-          detail = orders[editingIndex].detail || '';
-        }
-
-        const newOrder = {
-          name,
-          item: itemName,
-          price,
-          qty,
-          detail
-        };
-
-        if (editingIndex === -1) {
-          const existIndex = orders.findIndex(
-            o => o.name === newOrder.name &&
-                 o.item === newOrder.item &&
-                 o.price === newOrder.price &&
-                 (o.detail || '') === (newOrder.detail || '')
-          );
-          if (existIndex >= 0) {
-            orders[existIndex].qty += newOrder.qty;
-          } else {
-            orders.push(newOrder);
-          }
-        } else {
-          orders[editingIndex] = newOrder;
-          mergeDuplicateOrders();
-        }
-
-        editingIndex = -1;
-        resetOrderForm();
-        renderAll();
-      }
-
-      // 從購物車文字解析，加入 orders -----------------
-      function handleParseCartOrders() {
-        const text = cartTextInput.value.trim();
-        if (!text) {
-          alert('請先把購物車整段文字貼上。');
-          return;
-        }
-
-        const parsedOrders = parseCartTextToOrders(text);
-        if (!parsedOrders.length) {
-          alert('沒有解析到任何餐點，可能購物車格式跟預期不同。');
-          return;
-        }
-
-        for (const o of parsedOrders) {
-          // 若菜單尚未有此品項，順便加到菜單，之後比較好編輯
-          const menuIdx = menuItems.findIndex(
-            m => m.name === o.item && m.price === o.price
-          );
-          if (menuIdx === -1) {
-            menuItems.push({ name: o.item, price: o.price });
-          }
-
-          const existIndex = orders.findIndex(
-            x => x.name === o.name &&
-                 x.item === o.item &&
-                 x.price === o.price &&
-                 (x.detail || '') === (o.detail || '')
-          );
-          if (existIndex >= 0) {
-            orders[existIndex].qty += o.qty;
-          } else {
-            orders.push(o);
-          }
-        }
-
-        mergeDuplicateOrders();
-        renderMenu();
-        renderAll();
-        alert(`已從購物車解析出 ${parsedOrders.length} 筆餐點，已加入訂單。`);
-        cartTextInput.value = '';
-      }
-
-      function mergeDuplicateOrders() {
-        const map = {};
-        for (const o of orders) {
-          const key = `${o.name}|${o.item}|${o.price}|${o.detail || ''}`;
-          if (!map[key]) {
-            map[key] = { ...o };
-          } else {
-            map[key].qty += o.qty;
-          }
-        }
-        const merged = Object.values(map);
-        orders.length = 0;
-        orders.push(...merged);
-      }
-
-      function startEditOrder(index) {
-        const o = orders[index];
-        editingIndex = index;
-
-        nameInput.value = o.name;
-        qtyInput.value = o.qty;
-        menuSelect.value = `${o.item}|${o.price}`;
-
-        addOrderBtn.textContent = '💾 儲存修改';
-        nameInput.focus();
-      }
-
-      function deleteOrder(index) {
-        if (!confirm('確定要刪除此筆訂單嗎？')) return;
-        orders.splice(index, 1);
-        editingIndex = -1;
-        resetOrderForm();
-        renderAll();
-      }
-
-      function resetOrderForm() {
-        // 若不想保留上一個人名，可取消註解下一行
-        // nameInput.value = '';
-        qtyInput.value = 1;
-        addOrderBtn.textContent = '➕ 加入訂單';
-      }
-
-      // 畫面渲染 --------------------------------
-      function renderOrderTable() {
-        if (orders.length === 0) {
-          orderTbody.innerHTML =
-            '<tr><td colspan="7" style="text-align:center;color:#888;">尚無訂單</td></tr>';
-          return;
-        }
-
-        const rows = orders.map((o, index) => {
-          const subtotal = o.qty * o.price;
-          const detailHtml = o.detail
-            ? `<br><span style="font-size:12px;color:#666;">${o.detail}</span>`
-            : '';
-          return `
-            <tr>
-              <td>${index + 1}</td>
-              <td>${o.name}</td>
-              <td>${o.item}${detailHtml}</td>
-              <td>$${o.price}</td>
-              <td>${o.qty}</td>
-              <td>$${subtotal}</td>
-              <td>
-                <button type="button" class="btn-sm btn-edit" data-index="${index}">修改</button>
-                <button type="button" class="btn-sm btn-delete" data-index="${index}">刪除</button>
-              </td>
-            </tr>
-          `;
-        });
-
-        orderTbody.innerHTML = rows.join('');
-      }
-
-      function renderStats() {
-        const personStats = {};
-        const itemStats = {};
-        let grandTotalQty = 0;
-        let grandTotalMoney = 0;
-
-        if (orders.length === 0) {
-          grandTotalEl.textContent = '目前尚未點餐';
-          personTbody.innerHTML = '';
-          itemTbody.innerHTML = '';
-          return;
-        }
-
-        for (const o of orders) {
-          const subtotal = o.qty * o.price;
-          grandTotalQty   += o.qty;
-          grandTotalMoney += subtotal;
-
-          if (!personStats[o.name]) {
-            personStats[o.name] = { items: [], total: 0, count: 0 };
-          }
-          const p = personStats[o.name];
-
-          const itemText = o.detail
-            ? `${o.item} x${o.qty}（${o.detail}）`
-            : `${o.item} x${o.qty}`;
-          p.items.push(itemText);
-          p.total += subtotal;
-          p.count += o.qty;
-
-          if (!itemStats[o.item]) {
-            itemStats[o.item] = { count: 0, total: 0 };
-          }
-          const it = itemStats[o.item];
-          it.count += o.qty;
-          it.total += subtotal;
-        }
-
-        grandTotalEl.innerHTML =
-          `總份數: ${grandTotalQty} 份&nbsp;&nbsp;|&nbsp;&nbsp;總金額: $${grandTotalMoney}`;
-
-        let discountPercent = Number(discountInput.value);
-        if (Number.isNaN(discountPercent) || discountPercent < 0) discountPercent = 100;
-        if (discountPercent > 100) discountPercent = 100;
-        const discountFactor = discountPercent / 100;
-
-        const personEntries = Object.entries(personStats).sort(
-          ([a], [b]) => a.localeCompare(b, 'zh-Hant')
-        );
-        personTbody.innerHTML = personEntries.map(([name, data]) => {
-          const discountedRaw = data.total * discountFactor;
-          const discounted    = roundHalfUp(discountedRaw);
-
-          return `
-            <tr>
-              <td>${name}</td>
-              <td style="font-size:0.9em;color:#666;">${data.items.join('、')}</td>
-              <td>${data.count}</td>
-              <td style="color:#d9534f;font-weight:bold;">$${data.total}</td>
-              <td style="color:#28a745;font-weight:bold;">$${discounted}</td>
-            </tr>
-          `;
-        }).join('');
-
-        const itemEntries = Object.entries(itemStats).sort(
-          ([a], [b]) => a.localeCompare(b, 'zh-Hant')
-        );
-        itemTbody.innerHTML = itemEntries.map(([itemName, data]) => `
-          <tr>
-            <td>${itemName}</td>
-            <td style="font-weight:bold;">${data.count}</td>
-            <td>$${data.total}</td>
-          </tr>
-        `).join('');
-      }
-
-      function renderAll() {
-        renderOrderTable();
-        renderStats();
-      }
-
-      // 初始化
+    }
+    resetMenuForm();
+    renderMenu();
+    renderAll();
+  }
+
+  function handleImportMenu(){
+    const txt = menuImportInput.value.trim();
+    if (!txt) return alert('請先貼上文字');
+    let added = 0;
+    txt.split(/\r?\n/).forEach(line=>{
+      const parts = line.split(/[,，\t]/).map(s=>s && s.trim());
+      if (!parts[0]) return;
+      const price = Number(parts[1]);
+      if (Number.isNaN(price)) return;
+      menuItems.push({name:parts[0], price});
+      added++;
+    });
+    if (!added) return alert('格式不正確，請用「品項,金額」');
+    menuImportInput.value = '';
+    renderMenu();
+  }
+
+  menuTbody.addEventListener('click', e=>{
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const idx = Number(btn.dataset.idx);
+    const action = btn.dataset.action;
+    if (action === 'editMenu'){
+      const m = menuItems[idx];
+      menuEditingIndex = idx;
+      menuNameInput.value = m.name;
+      menuPriceInput.value = m.price;
+      addMenuItemBtn.textContent = '💾 儲存修改';
+    }else if (action === 'delMenu'){
+      if (!confirm('確定刪除此品項？')) return;
+      menuItems.splice(idx,1);
       renderMenu();
       renderAll();
-    })();
-  </script>
+    }
+  });
+
+  clearMenuBtn.onclick = () => {
+    if (!confirm('確定清除所有菜單品項？（不影響訂單資料）')) return;
+    menuItems.length = 0;
+    resetMenuForm();
+    renderMenu();
+  };
+
+  /* ---------- 購物車解析 ---------- */
+
+  function parseCartText(text){
+    const lines = text
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(l => l.length);
+
+    const IGNORES = ['群組中的其他人','已新增餐點','•','正在新增商品'];
+    const priceRegex = /\$([0-9][0-9.,]*)/;
+
+    function isIgnoreLine(l){
+      return IGNORES.some(x => l.includes(x));
+    }
+    function isUserLine(l){
+      if (l.includes('(您本人)')) return true;
+      if (/^訪客\s*\d+/.test(l)) return true;
+      return false;
+    }
+
+    const ordersFromCart = [];
+    let currentName = null;
+    let i = 0;
+
+    while (i < lines.length){
+      const line = lines[i];
+
+      if (isUserLine(line)){
+        currentName = line.replace('(您本人)','').trim();
+        i++;
+        continue;
+      }
+
+      if (isIgnoreLine(line) || line.includes('份餐點')){
+        i++;
+        continue;
+      }
+
+      if (line.includes('加料選擇')){ // 這種行在細節處理
+        i++;
+        continue;
+      }
+
+      const priceMatch = line.match(priceRegex);
+      if (!priceMatch){
+        i++;
+        continue;
+      }
+
+      const basePrice = parseFloat(priceMatch[1].replace(/,/g,'')) || 0;
+
+      // 往上找餐名和份數
+      let itemName = '';
+      let qty = 1;
+      for (let j = i - 1; j >= 0; j--){
+        const prev = lines[j];
+        if (isUserLine(prev) || prev.includes('份餐點')) break;
+        if (isIgnoreLine(prev)) continue;
+
+        const qtyOnly = prev.match(/^(\d+)$/);
+        const qtyWithWord = prev.match(/(\d+)\s*份/);
+
+        if (qtyOnly){
+          qty = parseInt(qtyOnly[1],10);
+          continue;
+        }
+        if (qtyWithWord){
+          qty = parseInt(qtyWithWord[1],10);
+          continue;
+        }
+
+        if (!itemName){
+          itemName = prev;
+          break;
+        }
+      }
+      if (!itemName){
+        i++;
+        continue;
+      }
+
+      // 往下抓加辣 / 加料 / 備註
+      let detailParts = [];
+      let extra = 0;
+      let k = i + 1;
+
+      while (k < lines.length){
+        const l2 = lines[k];
+
+        if (isUserLine(l2) || l2.includes('份餐點') ||
+           (priceRegex.test(l2) && !l2.includes('加料選擇'))){
+          break;
+        }
+        if (isIgnoreLine(l2)){
+          k++;
+          continue;
+        }
+
+        if (l2.includes('加辣選擇')){
+          const level = lines[k+1] || '';
+          if (level && !isUserLine(level) && !level.includes('份餐點')){
+            detailParts.push('加辣：' + level);
+          }
+          k += 2;
+          continue;
+        }
+
+        const addonMatch = l2.match(/加料選擇.*\(\$([0-9][0-9.,]+)\)/);
+        if (addonMatch){
+          const addonPrice = parseFloat(addonMatch[1].replace(/,/g,'')) || 0;
+          const addonName = lines[k+1] || '';
+          extra += addonPrice;
+          detailParts.push('加料：' + addonName + ' +' + addonPrice);
+          k += 2;
+          continue;
+        }
+
+        if (/^備註/.test(l2)){
+          detailParts.push(l2);
+          k++;
+          continue;
+        }
+
+        k++;
+      }
+
+      ordersFromCart.push({
+        name: currentName || '未命名',
+        item: itemName,
+        price: Math.round(basePrice + extra),
+        qty,
+        detail: detailParts.join(' / ')
+      });
+
+      i = k;
+    }
+
+    return ordersFromCart;
+  }
+
+  function handleParseCartOrders(){
+    const text = cartTextInput.value.trim();
+    if (!text) return alert('請先貼上購物車文字');
+
+    const parsed = parseCartText(text);
+    if (!parsed.length) return alert('沒有解析到任何餐點（格式可能不同）');
+
+    parsed.forEach(o=>{
+      // 菜單沒有這品項就順便加入
+      if (!menuItems.some(m => m.name === o.item && m.price === o.price)){
+        menuItems.push({name:o.item, price:o.price});
+      }
+      const idx = orders.findIndex(x =>
+        x.name === o.name &&
+        x.item === o.item &&
+        x.price === o.price &&
+        (x.detail || '') === (o.detail || '')
+      );
+      if (idx >= 0) orders[idx].qty += o.qty;
+      else orders.push(o);
+    });
+
+    mergeOrders();
+    renderMenu();
+    renderAll();
+    alert(`已從購物車解析出 ${parsed.length} 筆餐點`);
+    cartTextInput.value = '';
+  }
+
+  /* ---------- 訂單 / 統計 ---------- */
+
+  function mergeOrders(){
+    const map = {};
+    orders.forEach(o=>{
+      const key = `${o.name}|${o.item}|${o.price}|${o.detail||''}`;
+      if (!map[key]) map[key] = {...o};
+      else map[key].qty += o.qty;
+    });
+    const merged = Object.values(map);
+    orders.length = 0;
+    orders.push(...merged);
+  }
+
+  function resetOrderForm(){
+    qtyInput.value = 1;
+    addOrderBtn.textContent = '➕ 加入訂單';
+    orderEditingIndex = -1;
+  }
+
+  function handleSubmitOrder(){
+    const name = nameInput.value.trim();
+    const qty  = parseInt(qtyInput.value,10);
+    if (!name) return alert('請輸入姓名');
+    if (!menuSelect.value) return alert('請先新增品項');
+    if (Number.isNaN(qty) || qty <= 0) return alert('份數要 ≥ 1');
+
+    const [itemName, priceStr] = menuSelect.value.split('|');
+    const price = Number(priceStr);
+    if (!itemName || Number.isNaN(price)) return alert('品項資料錯誤');
+
+    let detail = '';
+    if (orderEditingIndex !== -1 && orders[orderEditingIndex]){
+      detail = orders[orderEditingIndex].detail || '';
+    }
+
+    const newOrder = {name, item:itemName, price, qty, detail};
+
+    if (orderEditingIndex === -1){
+      const idx = orders.findIndex(o =>
+        o.name===newOrder.name &&
+        o.item===newOrder.item &&
+        o.price===newOrder.price &&
+        (o.detail||'')===(newOrder.detail||'')
+      );
+      if (idx>=0) orders[idx].qty += newOrder.qty;
+      else orders.push(newOrder);
+    }else{
+      orders[orderEditingIndex] = newOrder;
+      mergeOrders();
+    }
+
+    resetOrderForm();
+    renderAll();
+  }
+
+  function renderOrderTable(){
+    if (!orders.length){
+      orderTbody.innerHTML =
+        '<tr><td colspan="7" style="text-align:center;color:#888;">尚無訂單</td></tr>';
+      return;
+    }
+    orderTbody.innerHTML = orders.map((o,i)=>{
+      const sub = o.qty * o.price;
+      const detailHtml = o.detail
+        ? `<br><span style="font-size:12px;color:#666;">${o.detail}</span>`
+        : '';
+      return `
+        <tr>
+          <td>${i+1}</td>
+          <td>${o.name}</td>
+          <td>${o.item}${detailHtml}</td>
+          <td>$${o.price}</td>
+          <td>${o.qty}</td>
+          <td>$${sub}</td>
+          <td>
+            <button class="btn-sm btn-edit" data-idx="${i}" data-action="editOrder">修改</button>
+            <button class="btn-sm btn-del"  data-idx="${i}" data-action="delOrder">刪除</button>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  orderTbody.addEventListener('click', e=>{
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const idx = Number(btn.dataset.idx);
+    const action = btn.dataset.action;
+    if (action === 'editOrder'){
+      const o = orders[idx];
+      orderEditingIndex = idx;
+      nameInput.value = o.name;
+      qtyInput.value  = o.qty;
+      menuSelect.value = `${o.item}|${o.price}`;
+      addOrderBtn.textContent = '💾 儲存修改';
+    }else if (action === 'delOrder'){
+      if (!confirm('確定刪除此訂單？')) return;
+      orders.splice(idx,1);
+      resetOrderForm();
+      renderAll();
+    }
+  });
+
+  function renderStats(){
+    if (!orders.length){
+      grandTotalEl.textContent = '目前尚未點餐';
+      personTbody.innerHTML = '';
+      itemTbody.innerHTML   = '';
+      return;
+    }
+
+    const personStats = {};  // name -> {items[], qty, total}
+    const itemStats   = {};  // item -> {qty, total, details[]}
+    let totalQty = 0;
+    let totalMoney = 0;
+
+    orders.forEach(o=>{
+      const sub = o.qty * o.price;
+      totalQty   += o.qty;
+      totalMoney += sub;
+
+      if (!personStats[o.name]) personStats[o.name] = {items:[], qty:0, total:0};
+      const p = personStats[o.name];
+      p.items.push(o.detail ? `${o.item} x${o.qty}（${o.detail}）` : `${o.item} x${o.qty}`);
+      p.qty   += o.qty;
+      p.total += sub;
+
+      if (!itemStats[o.item]) itemStats[o.item] = {qty:0, total:0, details:[]};
+      const it = itemStats[o.item];
+      it.qty   += o.qty;
+      it.total += sub;
+      if (o.detail) it.details.push(`${o.detail} x${o.qty}`);
+    });
+
+    grandTotalEl.textContent = `總份數：${totalQty} 份 ｜ 總金額：$${totalMoney}`;
+
+    let d = Number(discountInput.value);
+    if (Number.isNaN(d) || d <= 0) d = 100;
+    if (d > 100) d = 100;
+    const factor = d / 100;
+
+    personTbody.innerHTML = Object.entries(personStats)
+      .sort(([a],[b])=>a.localeCompare(b,'zh-Hant'))
+      .map(([name,data])=>{
+        const disc = roundHalf(data.total * factor);
+        return `
+          <tr>
+            <td>${name}</td>
+            <td style="font-size:12px;color:#555;">${data.items.join('、')}</td>
+            <td>${data.qty}</td>
+            <td style="color:#d9534f;font-weight:bold;">$${data.total}</td>
+            <td style="color:#28a745;font-weight:bold;">$${disc}</td>
+          </tr>`;
+      }).join('');
+
+    itemTbody.innerHTML = Object.entries(itemStats)
+      .sort(([a],[b])=>a.localeCompare(b,'zh-Hant'))
+      .map(([item,data])=>{
+        const detailHtml = data.details.length
+          ? `<div style="margin-top:4px;font-size:12px;color:#666;">
+               ${data.details.map(t=>`<div>・${t}</div>`).join('')}
+             </div>` : '';
+        return `
+          <tr>
+            <td>${item}${detailHtml}</td>
+            <td style="font-weight:bold;">${data.qty}</td>
+            <td>$${data.total}</td>
+          </tr>`;
+      }).join('');
+  }
+
+  function renderAll(){
+    renderOrderTable();
+    renderStats();
+  }
+
+  /* ---------- 事件綁定 ---------- */
+  addMenuItemBtn.onclick = handleSubmitMenuItem;
+  menuPriceInput.onkeydown = e => { if (e.key === 'Enter') handleSubmitMenuItem(); };
+  importMenuBtn.onclick = handleImportMenu;
+
+  addOrderBtn.onclick = handleSubmitOrder;
+  nameInput.onkeydown = e => { if (e.key === 'Enter') handleSubmitOrder(); };
+  qtyInput.onkeydown  = e => { if (e.key === 'Enter') handleSubmitOrder(); };
+
+  parseCartBtn.onclick = handleParseCartOrders;
+  discountInput.oninput = renderAll;
+
+  resetBtn.onclick = () => {
+    if (!confirm('清除所有訂單？（菜單保留）')) return;
+    orders.length = 0;
+    resetOrderForm();
+    renderAll();
+  };
+
+  // 初始化
+  renderMenu();
+  renderAll();
+})();
+</script>
+
 </body>
 </html>
