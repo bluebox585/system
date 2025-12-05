@@ -3,74 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <title>訂餐統計小工具</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <style>
-    body {
-      font-family: "微軟正黑體", sans-serif;
-      background: #d6d6d6;
-      padding: 20px;
-      max-width: 900px;
-      margin: 0 auto;
+    body{
+      font-family:"微軟正黑體",sans-serif;
+      background:#d6d6d6;
+      padding:20px;
+      max-width:900px;
+      margin:0 auto;
     }
-    h1, h2 {
-      text-align: center;
-      color: #333;
+    h1,h2{ text-align:center; color:#333; }
+    .card{
+      background:#fff;
+      padding:18px;
+      border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,.1);
+      margin-bottom:16px;
     }
-    .card {
-      background: #fff;
-      padding: 18px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, .1);
-      margin-bottom: 16px;
+    .input-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:center;
+      align-items:center;
     }
-    .input-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      align-items: center;
+    input,select,textarea,button{
+      font-family:inherit;
+      font-size:14px;
+      padding:8px;
+      border-radius:4px;
+      border:1px solid #ccc;
     }
-    input, select, textarea, button {
-      font-family: inherit;
-      font-size: 14px;
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
+    textarea{ width:100%; box-sizing:border-box; }
+    button{
+      background:#81afa7;
+      color:#fff;
+      border:none;
+      cursor:pointer;
+      transition:.2s;
     }
-    textarea { width: 100%; box-sizing: border-box; }
-    button {
-      background: #81afa7;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      transition: .2s;
+    button:hover{ background:#328779; }
+    .btn-danger{ background:#e8727e; }
+    .btn-danger:hover{ background:#891924; }
+    .btn-sm{ padding:3px 6px; font-size:12px; }
+    .btn-edit{ background:#ffc107; color:#212529; }
+    .btn-edit:hover{ background:#e0a800; }
+    .btn-del{ background:#e8727e; }
+    .btn-del:hover{ background:#891924; }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+      font-size:13px;
     }
-    button:hover { background: #328779; }
-    .btn-danger { background: #e8727e; }
-    .btn-danger:hover { background: #891924; }
-    .btn-sm { padding: 3px 6px; font-size: 12px; }
-    .btn-edit { background: #ffc107; color: #212529; }
-    .btn-edit:hover { background: #e0a800; }
-    .btn-del { background: #e8727e; }
-    .btn-del:hover { background: #891924; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 13px;
+    th,td{
+      border-bottom:1px solid #ddd;
+      padding:6px 8px;
+      text-align:left;
+      vertical-align:top;
     }
-    th, td {
-      border-bottom: 1px solid #ddd;
-      padding: 6px 8px;
-      text-align: left;
-      vertical-align: top;
-    }
-    th { background: #a1a279; color: #fff; }
-    tr:hover { background: #f7f7f7; }
-    .total-box {
-      text-align: right;
-      font-weight: bold;
-      color: #d9534f;
+    th{ background:#a1a279; color:#fff; }
+    tr:hover{ background:#f7f7f7; }
+    .total-box{
+      text-align:right;
+      font-weight:bold;
+      color:#d9534f;
     }
   </style>
 </head>
@@ -80,7 +77,7 @@
 
 <!-- ① 菜單設定 -->
 <div class="card">
-  <h2>手動輸入菜單品項</h2>
+  <h2>① 菜單品項</h2>
   <div class="input-row">
     <input id="menuNameInput" placeholder="品項名稱 (例：蒜香雪花牛肉幫米短法)" style="flex:1 1 160px;">
     <input id="menuPriceInput" type="number" min="0" placeholder="價格" style="width:110px;">
@@ -106,9 +103,9 @@
   </table>
 </div>
 
-<!-- ② 訂單輸入(從購物車) -->
+<!-- ② 訂單輸入 -->
 <div class="card">
-  <h2>快速輸入訂單(從購物車)</h2>
+  <h2>② 輸入訂單</h2>
   <div class="input-row">
     <input id="username" placeholder="姓名 (例：莞婷)" style="flex:1 1 120px;">
     <select id="menuSelect" style="flex:2 1 220px;"></select>
@@ -120,14 +117,32 @@
     <small>貼上 UberEats 購物車文字（從「莞婷 (您本人)」或「訪客1」那邊開始全選複製）：</small>
     <textarea id="cartTextInput" rows="7"
       placeholder="例：
-燕鳳
-正在新增商品
- • 
+莞婷 (您本人)
 2 份餐點
-1 雪藏生乳紅茶 NT$75.00
-1 蒜香雪花牛肉幫米短法 NT$150.00
-加辣選擇 微辣
-移除參加者"></textarea>
+
+1
+蒜香雪花牛肉幫米短法
+$150.00
+加辣選擇
+微辣
+
+1
+舒肥低脂嫩雞幫米短法
+$135.00
+加辣選擇
+小辣
+備註：不加香菜
+
+訪客1
+1 份餐點
+
+1
+野菜蜜汁燒肉幫米短法
+$200.00
+加辣選擇
+大辣
+加料選擇 ($65.00)
+沙嗲牛"></textarea>
     <div style="text-align:right;margin-top:6px;">
       <button id="parseCartBtn">🧾 解析購物車文字並加入訂單</button>
     </div>
@@ -159,7 +174,7 @@
   <div class="input-row" style="justify-content:flex-end;margin-bottom:6px;">
     <label style="font-size:13px;">
       折扣：
-      <input id="discountInput" type="number" min="0" max="100" value="50" style="width:60px;"> %
+      <input id="discountInput" type="number" min="0" max="100" value="100" style="width:60px;"> %
       <span style="font-size:12px;color:#666;">（100=原價，90=九折）</span>
     </label>
   </div>
@@ -175,7 +190,7 @@
 
 <!-- ⑥ 餐點統計 -->
 <div class="card">
-  <h2>🍗 餐點統計 (送出訂單用)</h2>
+  <h2>🍗 餐點統計 (店家叫貨用)</h2>
   <table>
     <thead>
       <tr>
@@ -325,134 +340,143 @@
 
   /* ---------- 購物車解析 ---------- */
 
-  function parseCartText(text) {
+  function parseCartText(text){
     const lines = text
-        .split(/\r?\n/)
-        .map(l => l.trim())
-        .filter(l => l.length);
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(l => l.length);
 
-    const IGNORES = ['群組中的其他人', '已新增餐點', '•', '正在新增商品'];
+    const IGNORES = ['群組中的其他人','已新增餐點','•','正在新增商品'];
     const priceRegex = /\$([0-9][0-9.,]*)/;
 
-    function isIgnoreLine(l) {
-        return IGNORES.some(x => l.includes(x));
+    function isIgnoreLine(l){
+      return IGNORES.some(x => l.includes(x));
     }
-
-    function isUserLine(l) {
-        return l.includes('正在新增商品') || /^(訪客|您本人)/.test(l);
+    function isUserLine(l){
+      if (l.includes('(您本人)')) return true;
+      if (/^訪客\s*\d+/.test(l)) return true;
+      return false;
     }
 
     const ordersFromCart = [];
     let currentName = null;
     let i = 0;
 
-    while (i < lines.length) {
-        const line = lines[i];
+    while (i < lines.length){
+      const line = lines[i];
 
-        // 尋找姓名
-        if (isUserLine(line)) {
-            currentName = lines[i - 1]; // 取「正在新增商品」之前的文字
-            i++;
-            continue;
+      if (isUserLine(line)){
+        currentName = line.replace('(您本人)','').trim();
+        i++;
+        continue;
+      }
+
+      if (isIgnoreLine(line) || line.includes('份餐點')){
+        i++;
+        continue;
+      }
+
+      if (line.includes('加料選擇')){ // 這種行在細節處理
+        i++;
+        continue;
+      }
+
+      const priceMatch = line.match(priceRegex);
+      if (!priceMatch){
+        i++;
+        continue;
+      }
+
+      const basePrice = parseFloat(priceMatch[1].replace(/,/g,'')) || 0;
+
+      // 往上找餐名和份數
+      let itemName = '';
+      let qty = 1;
+      for (let j = i - 1; j >= 0; j--){
+        const prev = lines[j];
+        if (isUserLine(prev) || prev.includes('份餐點')) break;
+        if (isIgnoreLine(prev)) continue;
+
+        const qtyOnly = prev.match(/^(\d+)$/);
+        const qtyWithWord = prev.match(/(\d+)\s*份/);
+
+        if (qtyOnly){
+          qty = parseInt(qtyOnly[1],10);
+          continue;
+        }
+        if (qtyWithWord){
+          qty = parseInt(qtyWithWord[1],10);
+          continue;
         }
 
-        if (isIgnoreLine(line) || line.includes('份餐點')) {
-            i++;
-            continue;
+        if (!itemName){
+          itemName = prev;
+          break;
+        }
+      }
+      if (!itemName){
+        i++;
+        continue;
+      }
+
+      // 往下抓加辣 / 加料 / 備註
+      let detailParts = [];
+      let extra = 0;
+      let k = i + 1;
+
+      while (k < lines.length){
+        const l2 = lines[k];
+
+        if (isUserLine(l2) || l2.includes('份餐點') ||
+           (priceRegex.test(l2) && !l2.includes('加料選擇'))){
+          break;
+        }
+        if (isIgnoreLine(l2)){
+          k++;
+          continue;
         }
 
-        const priceMatch = line.match(priceRegex);
-        if (!priceMatch) {
-            i++;
-            continue;
+        if (l2.includes('加辣選擇')){
+          const level = lines[k+1] || '';
+          if (level && !isUserLine(level) && !level.includes('份餐點')){
+            detailParts.push('加辣：' + level);
+          }
+          k += 2;
+          continue;
         }
 
-        const basePrice = parseFloat(priceMatch[1].replace(/,/g, '')) || 0;
-
-        // 找到品項和數量
-        let itemName = '';
-        let qty = 1;
-        for (let j = i - 1; j >= 0; j--) {
-            const prev = lines[j];
-            if (isUserLine(prev) || prev.includes('份餐點')) break;
-            if (isIgnoreLine(prev)) continue;
-
-            const qtyOnly = prev.match(/^(\d+)$/);
-            const qtyWithWord = prev.match(/(\d+)\s*份/);
-
-            if (qtyOnly) {
-                qty = parseInt(qtyOnly[1], 10);
-                continue;
-            }
-            if (qtyWithWord) {
-                qty = parseInt(qtyWithWord[1], 10);
-                continue;
-            }
-
-            if (!itemName) {
-                itemName = prev;
-                break;
-            }
+        const addonMatch = l2.match(/加料選擇.*\(\$([0-9][0-9.,]+)\)/);
+        if (addonMatch){
+          const addonPrice = parseFloat(addonMatch[1].replace(/,/g,'')) || 0;
+          const addonName = lines[k+1] || '';
+          extra += addonPrice;
+          detailParts.push('加料：' + addonName + ' +' + addonPrice);
+          k += 2;
+          continue;
         }
 
-        let detailParts = [];
-        let extra = 0;
-        let k = i + 1;
-
-        while (k < lines.length) {
-            const l2 = lines[k];
-
-            if (isUserLine(l2) || l2.includes('份餐點') ||
-                (priceRegex.test(l2) && !l2.includes('加料選擇'))) {
-                break;
-            }
-            if (isIgnoreLine(l2)) {
-                k++;
-                continue;
-            }
-
-            if (l2.includes('加辣選擇')) {
-                const level = lines[k + 1] || '';
-                if (level && !isUserLine(level) && !level.includes('份餐點')) {
-                    detailParts.push('加辣：' + level);
-                }
-                k += 2;
-                continue;
-            }
-
-            const addonMatch = l2.match(/加料選擇.*\(\$([0-9][0-9.,]+)\)/);
-            if (addonMatch) {
-                const addonPrice = parseFloat(addonMatch[1].replace(/,/g, '')) || 0;
-                const addonName = lines[k + 1] || '';
-                extra += addonPrice;
-                detailParts.push('加料：' + addonName + ' +' + addonPrice);
-                k += 2;
-                continue;
-            }
-
-            if (/^備註/.test(l2)) {
-                detailParts.push(l2);
-                k++;
-                continue;
-            }
-
-            k++;
+        if (/^備註/.test(l2)){
+          detailParts.push(l2);
+          k++;
+          continue;
         }
 
-        ordersFromCart.push({
-            name: currentName || '未命名',
-            item: itemName,
-            price: Math.round(basePrice + extra),
-            qty,
-            detail: detailParts.join(' / ')
-        });
+        k++;
+      }
 
-        i = k;
+      ordersFromCart.push({
+        name: currentName || '未命名',
+        item: itemName,
+        price: Math.round(basePrice + extra),
+        qty,
+        detail: detailParts.join(' / ')
+      });
+
+      i = k;
     }
 
     return ordersFromCart;
-}
-
+  }
 
   function handleParseCartOrders(){
     const text = cartTextInput.value.trim();
