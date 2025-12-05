@@ -5,69 +5,72 @@
   <title>訂餐統計小工具</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <style>
-    body{
-      font-family:"微軟正黑體",sans-serif;
-      background:#d6d6d6;
-      padding:20px;
-      max-width:900px;
-      margin:0 auto;
+    body {
+      font-family: "微軟正黑體", sans-serif;
+      background: #d6d6d6;
+      padding: 20px;
+      max-width: 900px;
+      margin: 0 auto;
     }
-    h1,h2{ text-align:center; color:#333; }
-    .card{
-      background:#fff;
-      padding:18px;
-      border-radius:8px;
-      box-shadow:0 2px 5px rgba(0,0,0,.1);
-      margin-bottom:16px;
+    h1, h2 {
+      text-align: center;
+      color: #333;
     }
-    .input-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      justify-content:center;
-      align-items:center;
+    .card {
+      background: #fff;
+      padding: 18px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, .1);
+      margin-bottom: 16px;
     }
-    input,select,textarea,button{
-      font-family:inherit;
-      font-size:14px;
-      padding:8px;
-      border-radius:4px;
-      border:1px solid #ccc;
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
     }
-    textarea{ width:100%; box-sizing:border-box; }
-    button{
-      background:#81afa7;
-      color:#fff;
-      border:none;
-      cursor:pointer;
-      transition:.2s;
+    input, select, textarea, button {
+      font-family: inherit;
+      font-size: 14px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
-    button:hover{ background:#328779; }
-    .btn-danger{ background:#e8727e; }
-    .btn-danger:hover{ background:#891924; }
-    .btn-sm{ padding:3px 6px; font-size:12px; }
-    .btn-edit{ background:#ffc107; color:#212529; }
-    .btn-edit:hover{ background:#e0a800; }
-    .btn-del{ background:#e8727e; }
-    .btn-del:hover{ background:#891924; }
-    table{
-      width:100%;
-      border-collapse:collapse;
-      margin-top:10px;
-      font-size:13px;
+    textarea { width: 100%; box-sizing: border-box; }
+    button {
+      background: #81afa7;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: .2s;
     }
-    th,td{
-      border-bottom:1px solid #ddd;
-      padding:6px 8px;
-      text-align:left;
-      vertical-align:top;
+    button:hover { background: #328779; }
+    .btn-danger { background: #e8727e; }
+    .btn-danger:hover { background: #891924; }
+    .btn-sm { padding: 3px 6px; font-size: 12px; }
+    .btn-edit { background: #ffc107; color: #212529; }
+    .btn-edit:hover { background: #e0a800; }
+    .btn-del { background: #e8727e; }
+    .btn-del:hover { background: #891924; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
     }
-    th{ background:#a1a279; color:#fff; }
-    tr:hover{ background:#f7f7f7; }
-    .total-box{
-      text-align:right;
-      font-weight:bold;
-      color:#d9534f;
+    th, td {
+      border-bottom: 1px solid #ddd;
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #a1a279; color: #fff; }
+    tr:hover { background: #f7f7f7; }
+    .total-box {
+      text-align: right;
+      font-weight: bold;
+      color: #d9534f;
     }
   </style>
 </head>
@@ -117,6 +120,14 @@
     <small>貼上 UberEats 購物車文字（從「莞婷 (您本人)」或「訪客1」那邊開始全選複製）：</small>
     <textarea id="cartTextInput" rows="7"
       placeholder="例：
+小石
+正在新增商品
+ • 尚未新增任何餐點
+
+潮宗
+正在新增商品
+ • 尚未新增任何餐點
+
 燕鳳
 正在新增商品
  • 
@@ -125,9 +136,11 @@
 1 蒜香雪花牛肉幫米短法 NT$150.00
 加辣選擇 微辣
 移除參加者
+
 翰翰
 正在新增商品
  • 尚未新增任何餐點
+
 Gene
 正在新增商品
  • 
@@ -358,18 +371,13 @@ Gene
     while (i < lines.length){
       const line = lines[i];
 
-      if (isUserLine(line)){
-        currentName = line.replace('(您本人)','').trim();
-        i++;
-        continue;
+      if (line.includes('正在新增商品') || line.includes('準備好了')) {
+        if (currentName === null) {
+          currentName = lines[i-1];  // 抓取「正在新增商品」之前一行作為姓名
+        }
       }
 
       if (isIgnoreLine(line) || line.includes('份餐點')){
-        i++;
-        continue;
-      }
-
-      if (line.includes('加料選擇')){ // 這種行在細節處理
         i++;
         continue;
       }
@@ -382,7 +390,6 @@ Gene
 
       const basePrice = parseFloat(priceMatch[1]) || 0;
 
-      // 往上找餐名和份數
       let itemName = '';
       let qty = 1;
       for (let j = i - 1; j >= 0; j--){
@@ -407,12 +414,7 @@ Gene
           break;
         }
       }
-      if (!itemName){
-        i++;
-        continue;
-      }
 
-      // 往下抓加辣 / 加料 / 備註
       let detailParts = [];
       let extra = 0;
       let k = i + 1;
