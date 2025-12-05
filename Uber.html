@@ -325,132 +325,134 @@
 
   /* ---------- 購物車解析 ---------- */
 
-  function parseCartText(text){
+  function parseCartText(text) {
     const lines = text
-      .split(/\r?\n/)
-      .map(l => l.trim())
-      .filter(l => l.length);
+        .split(/\r?\n/)
+        .map(l => l.trim())
+        .filter(l => l.length);
 
-    const IGNORES = ['群組中的其他人','已新增餐點','•','正在新增商品'];
-    const priceRegex = /NT\$(\d+\.\d{2})/;
+    const IGNORES = ['群組中的其他人', '已新增餐點', '•', '正在新增商品'];
+    const priceRegex = /\$([0-9][0-9.,]*)/;
 
-    function isIgnoreLine(l){
-      return IGNORES.some(x => l.includes(x));
+    function isIgnoreLine(l) {
+        return IGNORES.some(x => l.includes(x));
     }
-    function isUserLine(l){
-      if (l.includes('(您本人)')) return true;
-      if (/^訪客\s*\d+/.test(l)) return true;
-      return false;
+
+    function isUserLine(l) {
+        return l.includes('正在新增商品') || /^(訪客|您本人)/.test(l);
     }
 
     const ordersFromCart = [];
     let currentName = null;
     let i = 0;
 
-    while (i < lines.length){
-      const line = lines[i];
+    while (i < lines.length) {
+        const line = lines[i];
 
-      if (line.includes('正在新增商品') || line.includes('準備好了')) {
-        if (currentName === null) {
-          currentName = lines[i-1];  // 抓取「正在新增商品」之前一行作為姓名
-        }
-      }
-
-      if (isIgnoreLine(line) || line.includes('份餐點')){
-        i++;
-        continue;
-      }
-
-      const priceMatch = line.match(priceRegex);
-      if (!priceMatch){
-        i++;
-        continue;
-      }
-
-      const basePrice = parseFloat(priceMatch[1]) || 0;
-
-      let itemName = '';
-      let qty = 1;
-      for (let j = i - 1; j >= 0; j--){
-        const prev = lines[j];
-        if (isUserLine(prev) || prev.includes('份餐點')) break;
-        if (isIgnoreLine(prev)) continue;
-
-        const qtyOnly = prev.match(/^(\d+)$/);
-        const qtyWithWord = prev.match(/(\d+)\s*份/);
-
-        if (qtyOnly){
-          qty = parseInt(qtyOnly[1],10);
-          continue;
-        }
-        if (qtyWithWord){
-          qty = parseInt(qtyWithWord[1],10);
-          continue;
+        // 尋找姓名
+        if (isUserLine(line)) {
+            currentName = lines[i - 1]; // 取「正在新增商品」之前的文字
+            i++;
+            continue;
         }
 
-        if (!itemName){
-          itemName = prev;
-          break;
-        }
-      }
-
-      let detailParts = [];
-      let extra = 0;
-      let k = i + 1;
-
-      while (k < lines.length){
-        const l2 = lines[k];
-
-        if (isUserLine(l2) || l2.includes('份餐點') ||
-           (priceRegex.test(l2) && !l2.includes('加料選擇'))){
-          break;
-        }
-        if (isIgnoreLine(l2)){
-          k++;
-          continue;
+        if (isIgnoreLine(line) || line.includes('份餐點')) {
+            i++;
+            continue;
         }
 
-        if (l2.includes('加辣選擇')){
-          const level = lines[k+1] || '';
-          if (level && !isUserLine(level) && !level.includes('份餐點')){
-            detailParts.push('加辣：' + level);
-          }
-          k += 2;
-          continue;
+        const priceMatch = line.match(priceRegex);
+        if (!priceMatch) {
+            i++;
+            continue;
         }
 
-        const addonMatch = l2.match(/加料選擇.*\(\$([0-9][0-9.,]+)\)/);
-        if (addonMatch){
-          const addonPrice = parseFloat(addonMatch[1].replace(/,/g,'')) || 0;
-          const addonName = lines[k+1] || '';
-          extra += addonPrice;
-          detailParts.push('加料：' + addonName + ' +' + addonPrice);
-          k += 2;
-          continue;
+        const basePrice = parseFloat(priceMatch[1].replace(/,/g, '')) || 0;
+
+        // 找到品項和數量
+        let itemName = '';
+        let qty = 1;
+        for (let j = i - 1; j >= 0; j--) {
+            const prev = lines[j];
+            if (isUserLine(prev) || prev.includes('份餐點')) break;
+            if (isIgnoreLine(prev)) continue;
+
+            const qtyOnly = prev.match(/^(\d+)$/);
+            const qtyWithWord = prev.match(/(\d+)\s*份/);
+
+            if (qtyOnly) {
+                qty = parseInt(qtyOnly[1], 10);
+                continue;
+            }
+            if (qtyWithWord) {
+                qty = parseInt(qtyWithWord[1], 10);
+                continue;
+            }
+
+            if (!itemName) {
+                itemName = prev;
+                break;
+            }
         }
 
-        if (/^備註/.test(l2)){
-          detailParts.push(l2);
-          k++;
-          continue;
+        let detailParts = [];
+        let extra = 0;
+        let k = i + 1;
+
+        while (k < lines.length) {
+            const l2 = lines[k];
+
+            if (isUserLine(l2) || l2.includes('份餐點') ||
+                (priceRegex.test(l2) && !l2.includes('加料選擇'))) {
+                break;
+            }
+            if (isIgnoreLine(l2)) {
+                k++;
+                continue;
+            }
+
+            if (l2.includes('加辣選擇')) {
+                const level = lines[k + 1] || '';
+                if (level && !isUserLine(level) && !level.includes('份餐點')) {
+                    detailParts.push('加辣：' + level);
+                }
+                k += 2;
+                continue;
+            }
+
+            const addonMatch = l2.match(/加料選擇.*\(\$([0-9][0-9.,]+)\)/);
+            if (addonMatch) {
+                const addonPrice = parseFloat(addonMatch[1].replace(/,/g, '')) || 0;
+                const addonName = lines[k + 1] || '';
+                extra += addonPrice;
+                detailParts.push('加料：' + addonName + ' +' + addonPrice);
+                k += 2;
+                continue;
+            }
+
+            if (/^備註/.test(l2)) {
+                detailParts.push(l2);
+                k++;
+                continue;
+            }
+
+            k++;
         }
 
-        k++;
-      }
+        ordersFromCart.push({
+            name: currentName || '未命名',
+            item: itemName,
+            price: Math.round(basePrice + extra),
+            qty,
+            detail: detailParts.join(' / ')
+        });
 
-      ordersFromCart.push({
-        name: currentName || '未命名',
-        item: itemName,
-        price: Math.round(basePrice + extra),
-        qty,
-        detail: detailParts.join(' / ')
-      });
-
-      i = k;
+        i = k;
     }
 
     return ordersFromCart;
-  }
+}
+
 
   function handleParseCartOrders(){
     const text = cartTextInput.value.trim();
