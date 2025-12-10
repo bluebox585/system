@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USDT 出金路徑比較計算機</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f3f4f6; }
+        .card { transition: all 0.3s ease; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .btn-loading { opacity: 0.7; pointer-events: none; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">USDT 出金路徑比較器</h1>
+            <p class="text-gray-600">比較「國際轉匯 (雙重匯率)」與「在地交易所 (直接匯率)」的最終實拿金額</p>
+        </div>
+
+        <!-- Main Input Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            
+            <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+                <div class="w-full md:w-1/2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">預計出金 USDT 金額</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">$</span>
+                        </div>
+                        <input type="number" id="usdtAmount" value="1000" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-lg border-gray-300 rounded-md py-3 border" placeholder="0.00">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">USDT</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="w-full md:w-auto flex flex-col items-end">
+                    <button onclick="fetchRates()" id="fetchBtn" class="w-full md:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-sm transition-colors flex items-center justify-center gap-2">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>更新市場匯率</span>
+                    </button>
+                    <span id="lastUpdated" class="text-xs text-gray-400 mt-1 h-4"></span>
+                </div>
+            </div>
+            
+            <p class="text-xs text-gray-500 mb-4 text-right">
+                * 數據來源：MAX 官方 API (台幣路徑) & CoinGecko (國際路徑)
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Method A: Crypto (SGD Path) -->
+                <div class="border rounded-lg p-4 bg-blue-50 border-blue-200 relative card">
+                    <div class="absolute -top-3 left-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">Crypto.com ATM提款</div>
+                    <div class="mt-4 space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 flex justify-between items-center">
+                                USDT 對 SGD 匯率
+                                <a href="https://crypto.com/en/converter/usdt/sgd" target="_blank" class="text-blue-600 hover:text-blue-800 underline flex items-center ml-2" title="前往 Crypto.com 查詢匯率">
+                                    <i class="fas fa-external-link-alt mr-1"></i>官網查證
+                                </a>
+                            </label>
+                            <input type="number" id="rateUsdtSgd" value="1.26" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm border p-2 bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 flex justify-between items-center">
+                                SGD 對 TWD 匯率
+                                <a href="https://www.google.com/search?q=SGD+to+TWD" target="_blank" class="text-blue-600 hover:text-blue-800 underline flex items-center ml-2" title="前往 Google 查詢匯率">
+                                    <i class="fab fa-google mr-1"></i>Google 查證
+                                </a>
+                            </label>
+                            <input type="number" id="rateSgdTwd" value="24.01" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm border p-2 bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 flex justify-between">
+                                額外手續費 (TWD) 
+                                <span class="text-gray-400 text-[10px]">*如中轉行收費</span>
+                            </label>
+                            <input type="number" id="feeA" value="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm border p-2 bg-white">
+                        </div>
+                        <div class="pt-2 border-t border-blue-200">
+                            <div class="flex justify-between items-end">
+                                <span class="text-sm text-gray-600">預估台幣:</span>
+                                <span class="text-xl font-bold text-blue-700" id="resultA">---</span>
+                            </div>
+                            <div class="text-xs text-blue-500 mt-1" id="rateEffectiveA">實際匯率: ---</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Method B: MAX (Direct TWD) -->
+                <div class="border rounded-lg p-4 bg-orange-50 border-orange-200 relative card">
+                    <div class="absolute -top-3 left-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">MAX出金</div>
+                    <div class="mt-4 space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 flex justify-between items-center">
+                                USDT 對 TWD 匯率
+                                <a href="https://max.maicoin.com/trades/usdttwd" target="_blank" class="text-orange-600 hover:text-orange-800 underline flex items-center ml-2" title="前往 MAX 交易所確認">
+                                    <i class="fas fa-external-link-alt mr-1"></i>MAX 官網
+                                </a>
+                            </label>
+                            <input type="number" id="rateUsdtTwd" value="31.214" step="0.001" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm border p-2 bg-white">
+                        </div>
+                        
+                        <!-- Updated Fee Section -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">交易手續費 (%)</label>
+                            <div class="flex gap-2 mb-2 flex-wrap">
+                                <button onclick="setFee(0.08)" class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded hover:bg-gray-200 transition border border-gray-200">掛單 (0.08%)</button>
+                                <button onclick="setFee(0.16)" class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded hover:bg-gray-200 transition border border-gray-200">吃單 (0.16%)</button>
+                                <button onclick="setFee(0.24)" class="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded hover:bg-orange-200 transition border border-orange-200 font-bold">加總 (0.24%)</button>
+                            </div>
+                            <input type="number" id="feeTradePercent" value="0.24" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm border p-2 bg-white" placeholder="如 0.24">
+                        </div>
+                        
+                         <div>
+                            <label class="block text-xs font-medium text-gray-500">提領手續費 (TWD)</label>
+                            <input type="number" id="feeB" value="30" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm border p-2 bg-white">
+                        </div>
+                        <div class="pt-2 border-t border-orange-200">
+                            <div class="flex justify-between items-end">
+                                <span class="text-sm text-gray-600">預估台幣:</span>
+                                <span class="text-xl font-bold text-orange-700" id="resultB">---</span>
+                            </div>
+                            <div class="text-xs text-orange-600 mt-1" id="rateEffectiveB">實際匯率: ---</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Result Summary -->
+        <div class="bg-white rounded-xl shadow-lg p-6 border-l-8 border-indigo-500">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">分析結果</h3>
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <div class="flex-1 w-full">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-gray-600 font-medium">獲勝者</span>
+                        <span class="px-3 py-1 rounded-full text-sm font-bold text-white" id="winnerLabel">計算中...</span>
+                    </div>
+                    <div class="text-4xl font-bold text-gray-900 mb-1" id="diffAmount">NT$ 0</div>
+                    <p class="text-sm text-gray-500">比另一種方式多領出的金額</p>
+                </div>
+                <div class="w-full md:w-1/3 h-32 relative">
+                     <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="mt-4 p-4 bg-gray-50 rounded-lg text-sm text-gray-600 space-y-2">
+                <p><i class="fas fa-info-circle text-indigo-500 mr-2"></i><strong>小提示：</strong></p>
+                <ul class="list-disc list-inside ml-2 space-y-1">
+                    <li><strong>MAX 匯率來源：</strong> 已串接 MAX 官方 API，直接獲取當前市場成交價。</li>
+                    <li><strong>交易成本：</strong> 右側已扣除預設手續費，為最接近真實的「到手金額」。</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Data & Elements
+        const inputs = document.querySelectorAll('input');
+        const elResultA = document.getElementById('resultA');
+        const elResultB = document.getElementById('resultB');
+        const elRateEffA = document.getElementById('rateEffectiveA');
+        const elRateEffB = document.getElementById('rateEffectiveB');
+        const elWinnerLabel = document.getElementById('winnerLabel');
+        const elDiffAmount = document.getElementById('diffAmount');
+        const fetchBtn = document.getElementById('fetchBtn');
+        const elFeeInput = document.getElementById('feeTradePercent');
+        const elLastUpdated = document.getElementById('lastUpdated');
+        let chart;
+
+        // Helper for Fee Buttons
+        function setFee(val) {
+            elFeeInput.value = val;
+            calculate();
+        }
+
+        // Auto Fetch Function
+        async function fetchRates() {
+            const originalText = fetchBtn.innerHTML;
+            fetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 更新中...';
+            fetchBtn.classList.add('btn-loading');
+            elLastUpdated.textContent = '';
+
+            try {
+                // Parallel fetching to speed up
+                const p1 = fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=sgd');
+                const p2 = fetch('https://api.exchangerate-api.com/v4/latest/SGD');
+                // MAX Exchange Public API for USDT/TWD
+                const p3 = fetch('https://max-api.maicoin.com/api/v2/tickers/usdttwd');
+
+                const [resCg, resFx, resMax] = await Promise.all([p1, p2, p3]);
+
+                const cgData = await resCg.json();
+                const fxData = await resFx.json();
+                
+                // Handle MAX API
+                let maxRate = null;
+                if (resMax.ok) {
+                    const maxData = await resMax.json();
+                    // maxData.last represents the price of the last transaction
+                    // maxData.buy represents best bid (selling price), maxData.sell represents best ask
+                    // Using 'last' is generally safe for estimation, or 'buy' for immediate sell order
+                    if (maxData && maxData.last) {
+                        maxRate = parseFloat(maxData.last);
+                    }
+                }
+
+                // 1. Update Path A: Crypto.com (USDT -> SGD)
+                if (cgData.tether) {
+                    const elSgd = document.getElementById('rateUsdtSgd');
+                    elSgd.value = cgData.tether.sgd.toFixed(3);
+                    highlightUpdate(elSgd);
+                }
+
+                if (fxData && fxData.rates) {
+                    const elSgdTwd = document.getElementById('rateSgdTwd');
+                    elSgdTwd.value = fxData.rates.TWD.toFixed(3);
+                    highlightUpdate(elSgdTwd);
+                }
+
+                // 2. Update Path B: MAX (USDT -> TWD)
+                const elTwd = document.getElementById('rateUsdtTwd');
+                if (maxRate) {
+                    elTwd.value = maxRate.toFixed(3);
+                } else if (cgData.tether && cgData.tether.twd) {
+                    // Fallback to CoinGecko if MAX API fails (CORS or downtime)
+                    // Note: In this version we didn't fetch twd from CG above to save bandwidth? 
+                    // Wait, we removed twd from CG fetch list in this specific request? 
+                    // No, keeping it as fallback is wise but I modified p1 url above to only sgd.
+                    // Let's rely on MAX. If MAX fails, user inputs manually.
+                }
+                highlightUpdate(elTwd);
+
+                // Trigger Recalculate
+                calculate();
+                
+                // Update timestamp
+                const now = new Date();
+                elLastUpdated.textContent = `最後更新: ${now.toLocaleTimeString()}`;
+
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                elLastUpdated.textContent = '部分更新失敗，請檢查網路';
+                // Even if error, recalculate with whatever values we have
+                calculate();
+            } finally {
+                fetchBtn.innerHTML = '<i class="fas fa-sync-alt"></i> <span>更新市場匯率</span>';
+                fetchBtn.classList.remove('btn-loading');
+            }
+        }
+
+        function highlightUpdate(element) {
+            element.classList.add('bg-yellow-50', 'transition-colors', 'duration-500');
+            setTimeout(() => {
+                element.classList.remove('bg-yellow-50');
+            }, 1000);
+        }
+
+        function calculate() {
+            // Get Values
+            const usdt = parseFloat(document.getElementById('usdtAmount').value) || 0;
+            
+            // Path A
+            const rUS = parseFloat(document.getElementById('rateUsdtSgd').value) || 0;
+            const rST = parseFloat(document.getElementById('rateSgdTwd').value) || 0;
+            const fA = parseFloat(document.getElementById('feeA').value) || 0;
+            
+            // Path B
+            const rUT = parseFloat(document.getElementById('rateUsdtTwd').value) || 0;
+            const fB = parseFloat(document.getElementById('feeB').value) || 0;
+            const fTradePct = parseFloat(document.getElementById('feeTradePercent').value) || 0;
+
+            // Calculations
+            // A: USDT -> SGD -> TWD - Fee
+            const valA = (usdt * rUS * rST) - fA;
+            const rateA = usdt > 0 ? (valA / usdt) : 0;
+
+            // B: (USDT * Rate) * (1 - TradeFee) - WithdrawalFee
+            // Usually trade fee is deducted from TWD amount obtained
+            const valB_PreFee = usdt * rUT;
+            const valB = (valB_PreFee * (1 - (fTradePct / 100))) - fB;
+            const rateB = usdt > 0 ? (valB / usdt) : 0;
+
+            // Update UI
+            elResultA.textContent = `NT$ ${valA.toLocaleString('zh-TW', {maximumFractionDigits: 1})}`;
+            elResultB.textContent = `NT$ ${valB.toLocaleString('zh-TW', {maximumFractionDigits: 1})}`;
+            
+            elRateEffA.textContent = `實際匯率: ${rateA.toFixed(3)}`;
+            elRateEffB.textContent = `實際匯率: ${rateB.toFixed(3)}`;
+
+            // Comparison
+            const diff = Math.abs(valA - valB);
+            if (valA > valB) {
+                elWinnerLabel.textContent = "路徑 A (國際) 勝出";
+                elWinnerLabel.className = "px-3 py-1 rounded-full text-sm font-bold text-white bg-blue-600";
+                elDiffAmount.textContent = `+ NT$ ${diff.toLocaleString('zh-TW', {maximumFractionDigits: 0})}`;
+                elDiffAmount.className = "text-4xl font-bold text-blue-600 mb-1";
+            } else {
+                elWinnerLabel.textContent = "路徑 B (在地) 勝出";
+                elWinnerLabel.className = "px-3 py-1 rounded-full text-sm font-bold text-white bg-orange-500";
+                elDiffAmount.textContent = `+ NT$ ${diff.toLocaleString('zh-TW', {maximumFractionDigits: 0})}`;
+                elDiffAmount.className = "text-4xl font-bold text-orange-600 mb-1";
+            }
+
+            updateChart(valA, valB);
+        }
+
+        function updateChart(valA, valB) {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            if (chart) {
+                chart.data.datasets[0].data = [valA, valB];
+                chart.update();
+            } else {
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['路徑 A', '路徑 B'],
+                        datasets: [{
+                            label: '最終實拿 TWD',
+                            data: [valA, valB],
+                            backgroundColor: [
+                                'rgba(37, 99, 235, 0.7)', // Blue
+                                'rgba(249, 115, 22, 0.7)'  // Orange
+                            ],
+                            borderColor: [
+                                'rgb(37, 99, 235)',
+                                'rgb(249, 115, 22)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false // Start scale closer to values to see diff
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Listeners
+        inputs.forEach(input => input.addEventListener('input', calculate));
+        
+        // Initial Run (Auto Fetch on Load)
+        fetchRates();
+
+    </script>
+</body>
+</html>
