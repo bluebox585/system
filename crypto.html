@@ -196,72 +196,61 @@
             fetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 更新中...';
             fetchBtn.classList.add('btn-loading');
             elLastUpdated.textContent = '';
+            
+            let successCount = 0;
 
+            // 1. Fetch Crypto (CoinGecko)
             try {
-                // Parallel fetching to speed up
-                const p1 = fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=sgd');
-                const p2 = fetch('https://api.exchangerate-api.com/v4/latest/SGD');
-                // MAX Exchange Public API for USDT/TWD
-                const p3 = fetch('https://max-api.maicoin.com/api/v2/tickers/usdttwd');
-
-                const [resCg, resFx, resMax] = await Promise.all([p1, p2, p3]);
-
-                const cgData = await resCg.json();
-                const fxData = await resFx.json();
-                
-                // Handle MAX API
-                let maxRate = null;
-                if (resMax.ok) {
-                    const maxData = await resMax.json();
-                    // maxData.last represents the price of the last transaction
-                    // maxData.buy represents best bid (selling price), maxData.sell represents best ask
-                    // Using 'last' is generally safe for estimation, or 'buy' for immediate sell order
-                    if (maxData && maxData.last) {
-                        maxRate = parseFloat(maxData.last);
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=sgd');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.tether) {
+                        const elSgd = document.getElementById('rateUsdtSgd');
+                        elSgd.value = data.tether.sgd.toFixed(3);
+                        highlightUpdate(elSgd);
+                        successCount++;
                     }
                 }
+            } catch (e) { console.warn('CoinGecko Error:', e); }
 
-                // 1. Update Path A: Crypto.com (USDT -> SGD)
-                if (cgData.tether) {
-                    const elSgd = document.getElementById('rateUsdtSgd');
-                    elSgd.value = cgData.tether.sgd.toFixed(3);
-                    highlightUpdate(elSgd);
+            // 2. Fetch Forex (ExchangeRate-API)
+            try {
+                const res = await fetch('https://api.exchangerate-api.com/v4/latest/SGD');
+                if (res.ok) {
+                    const data = await res.json();
+                     if (data && data.rates) {
+                        const elSgdTwd = document.getElementById('rateSgdTwd');
+                        elSgdTwd.value = data.rates.TWD.toFixed(3);
+                        highlightUpdate(elSgdTwd);
+                        successCount++;
+                    }
                 }
+            } catch (e) { console.warn('Forex Error:', e); }
 
-                if (fxData && fxData.rates) {
-                    const elSgdTwd = document.getElementById('rateSgdTwd');
-                    elSgdTwd.value = fxData.rates.TWD.toFixed(3);
-                    highlightUpdate(elSgdTwd);
+            // 3. Fetch MAX API
+            try {
+                const res = await fetch('https://max-api.maicoin.com/api/v2/tickers/usdttwd');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.last) {
+                        const elTwd = document.getElementById('rateUsdtTwd');
+                        elTwd.value = parseFloat(data.last).toFixed(3);
+                        highlightUpdate(elTwd);
+                        successCount++;
+                    }
                 }
+            } catch (e) { console.warn('MAX API Error:', e); }
 
-                // 2. Update Path B: MAX (USDT -> TWD)
-                const elTwd = document.getElementById('rateUsdtTwd');
-                if (maxRate) {
-                    elTwd.value = maxRate.toFixed(3);
-                } else if (cgData.tether && cgData.tether.twd) {
-                    // Fallback to CoinGecko if MAX API fails (CORS or downtime)
-                    // Note: In this version we didn't fetch twd from CG above to save bandwidth? 
-                    // Wait, we removed twd from CG fetch list in this specific request? 
-                    // No, keeping it as fallback is wise but I modified p1 url above to only sgd.
-                    // Let's rely on MAX. If MAX fails, user inputs manually.
-                }
-                highlightUpdate(elTwd);
-
-                // Trigger Recalculate
-                calculate();
-                
-                // Update timestamp
-                const now = new Date();
-                elLastUpdated.textContent = `最後更新: ${now.toLocaleTimeString()}`;
-
-            } catch (error) {
-                console.error("Fetch Error:", error);
-                elLastUpdated.textContent = '部分更新失敗，請檢查網路';
-                // Even if error, recalculate with whatever values we have
-                calculate();
-            } finally {
-                fetchBtn.innerHTML = '<i class="fas fa-sync-alt"></i> <span>更新市場匯率</span>';
-                fetchBtn.classList.remove('btn-loading');
+            // Finalize
+            calculate();
+            fetchBtn.innerHTML = '<i class="fas fa-sync-alt"></i> <span>更新市場匯率</span>';
+            fetchBtn.classList.remove('btn-loading');
+            
+            const now = new Date();
+            if (successCount > 0) {
+                elLastUpdated.textContent = `最後更新: ${now.toLocaleTimeString()} (成功更新 ${successCount}/3 項)`;
+            } else {
+                 elLastUpdated.textContent = '更新失敗，請稍後再試';
             }
         }
 
