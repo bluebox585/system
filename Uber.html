@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UberEats 團購整理神器</title>
+    <title>UberEats 團購車整理神器</title>
     <!-- Tailwind CSS (樣式庫) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React 核心 -->
@@ -325,7 +325,8 @@ $135.00`;
                 const peopleBlocks = [];
 
                 const anchorRegex = /^\d+\s*份餐點/; 
-                const statusSkipRegex = /^(準備好了|•|移除參加者)$/;
+                // 新增 "完成後將自己標記為準備就緒" 到忽略清單
+                const statusSkipRegex = /^(準備好了|•|移除參加者|正在新增商品|完成後將自己標記為準備就緒)$/;
 
                 lines.forEach((line, idx) => {
                     if (anchorRegex.test(line)) {
@@ -381,7 +382,8 @@ $135.00`;
                 let currentItem = null;
                 let pendingPrefix = null;
 
-                const ignoreRegex = /(^移除參加者$|^群組中的其他人$|人中有.*人已新增餐點|^準備好了$|^•$)/;
+                // 新增 "完成後將自己標記為準備就緒" 到忽略清單
+                const ignoreRegex = /(^移除參加者$|^群組中的其他人$|人中有.*人已新增餐點|^準備好了$|^•$|^正在新增商品$|^完成後將自己標記為準備就緒$)/;
                 const qtyRegex = /^\d+$/; 
                 const priceRegex = /^[$\uff04]?(\d+(\.\d+)?)$/;
 
@@ -580,7 +582,7 @@ $135.00`;
                             <h1 className="text-3xl font-bold text-green-600 mb-2 flex items-center justify-center gap-2">
                                 <ShoppingBag className="w-8 h-8" /> UberEats 團購車整理神器
                             </h1>
-                            <p className="text-gray-500">貼上購物車複製文字，一鍵產出清爽表格！</p>
+                            <p className="text-gray-500">支援新版格式！貼上複製文字，一鍵產出清爽表格</p>
                         </div>
                     </header>
 
