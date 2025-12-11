@@ -23,19 +23,18 @@
             --text-main: #1D1D1F;
             --text-sub: #555555;
             
-            /* 毛玻璃卡片設定 - 稍微增加不透明度讓它在淺色背景更明顯 */
-            --glass-bg: rgba(255, 255, 255, 0.55);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.6);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 160, 233, 0.15); /* 陰影帶一點點藍 */
+            /* 毛玻璃卡片設定 */
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.7);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 160, 233, 0.15);
             --backdrop-blur: blur(12px);
         }
 
         body {
             font-family: 'Mali', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             
-            /* --- 背景改為咖波風格 --- */
+            /* --- 背景維持咖波風格 --- */
             background-color: var(--capoo-light-bg);
-            /* 可愛的波點背景 */
             background-image: radial-gradient(#B3E5FC 3px, transparent 3px);
             background-size: 25px 25px;
             
@@ -48,7 +47,7 @@
             min-height: 100vh;
         }
 
-        /* 裝飾用的背景光暈 - 改成藍色系，增加毛玻璃的層次感 */
+        /* 裝飾用的背景光暈 */
         body::before {
             content: '';
             position: fixed;
@@ -69,13 +68,13 @@
             right: -10%;
             width: 40vw;
             height: 40vw;
-            background: rgba(255, 153, 204, 0.15); /* 一點點肉球粉 */
+            background: rgba(255, 153, 204, 0.15);
             filter: blur(60px);
             border-radius: 50%;
             z-index: -1;
         }
 
-        /* --- Header 改回咖波風格 --- */
+        /* --- Header 維持咖波風格 --- */
         header {
             width: 100%;
             max-width: 100%;
@@ -86,14 +85,11 @@
             box-shadow: 0 4px 15px rgba(0, 160, 233, 0.3);
             margin-top: 0;
             margin-bottom: 30px;
-            /* 超圓潤的底部 */
             border-bottom-left-radius: 50% 30px;
             border-bottom-right-radius: 50% 30px;
-            border: none; /* 移除毛玻璃邊框 */
             position: relative;
         }
 
-        /* 裝飾 header 的小耳朵 */
         header::before, header::after {
             content: '';
             position: absolute;
@@ -111,10 +107,8 @@
             margin: 0;
             font-size: 2rem;
             font-weight: 700;
-            color: white; /* 標題改回白色 */
+            color: white;
             text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
-            background: none;
-            -webkit-text-fill-color: initial;
         }
 
         p.subtitle {
@@ -134,7 +128,7 @@
             padding-bottom: 40px;
         }
 
-        /* --- 卡片維持 Apple Glassmorphism --- */
+        /* --- 卡片樣式 (Glassmorphism) --- */
         .card {
             background: var(--glass-bg);
             backdrop-filter: var(--backdrop-blur);
@@ -155,44 +149,51 @@
 
         .card:hover {
             transform: translateY(-5px) scale(1.02);
-            background: rgba(255, 255, 255, 0.75);
-            box-shadow: 0 15px 40px rgba(0, 160, 233, 0.15); /* Hover 時陰影帶藍 */
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 15px 40px rgba(0, 160, 233, 0.2);
         }
 
+        /* 修改後的 Icon Box：貼圖風格 */
         .icon-box {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, #ffffff 0%, #E1F5FE 100%); /* 微調成淡藍白漸層 */
-            border-radius: 18px;
+            width: 64px; /* 稍微加大 */
+            height: 64px;
+            /* 移除背景色和邊框，讓貼圖看起來像貼在上面 */
+            background: transparent; 
+            border-radius: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 16px;
+            margin-right: 12px;
             flex-shrink: 0;
-            overflow: hidden; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            /* 移除 overflow: hidden 以免切到可愛的貼圖邊緣 */
+            overflow: visible; 
+            box-shadow: none; /* 移除陰影 */
         }
 
+        /* 讓圖片填滿且保持比例，稍微放大一點點 */
         .icon-box img {
-            width: 32px;
-            height: 32px;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
+            transform: scale(1.1); /* 放大 10% 更有張力 */
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); /* 給貼圖本身加一點陰影 */
         }
         
+        /* 如果還是用 Emoji，保持字體大小 */
         .icon-box span {
-            font-size: 28px;
+            font-size: 36px;
         }
 
         .content {
             flex-grow: 1;
             overflow: hidden;
+            padding-right: 10px; /* 避免文字太靠右 */
         }
 
         .content h2 {
             margin: 0 0 4px 0;
             font-size: 1.15rem;
             font-weight: 700;
-            letter-spacing: 0; /* 配合圓體字 */
         }
 
         .content p {
@@ -207,8 +208,8 @@
 
         /* 新增按鈕樣式 */
         .add-card {
-            background: rgba(255, 255, 255, 0.3);
-            border: 2px dashed rgba(0, 160, 233, 0.4); /* 咖波藍虛線 */
+            background: rgba(255, 255, 255, 0.4);
+            border: 3px dashed rgba(0, 160, 233, 0.4);
             justify-content: center;
             color: #00A0E9;
             box-shadow: none;
@@ -216,7 +217,7 @@
         
         .add-card:hover {
             border-color: #00A0E9;
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.7);
         }
 
         .add-icon {
@@ -251,7 +252,7 @@
 
         .edit-btn {
             right: 50px;
-            color: #00A0E9; /* 編輯按鈕改咖波藍 */
+            color: #00A0E9;
         }
 
         .card:hover .action-btn {
@@ -269,19 +270,20 @@
                 opacity: 0.8;
                 transform: scale(1);
             }
-            header {
-                padding: 30px 20px 40px 20px;
+            .icon-box {
+                width: 56px;
+                height: 56px;
             }
         }
 
-        /* Modal 彈窗樣式 - 結合圓潤感與毛玻璃 */
+        /* Modal 彈窗樣式 */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 77, 102, 0.4); /* 稍微帶藍的遮罩 */
+            background: rgba(0, 77, 102, 0.4);
             backdrop-filter: blur(5px);
             display: none;
             align-items: center;
@@ -290,15 +292,15 @@
         }
 
         .modal {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             padding: 30px;
-            border-radius: 30px; /* 更圓潤 */
+            border-radius: 30px;
             width: 85%;
             max-width: 380px;
             box-shadow: 0 25px 50px -12px rgba(0, 160, 233, 0.25);
-            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Q彈動畫 */
+            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             border: 3px solid #B3E5FC;
         }
 
@@ -389,7 +391,7 @@
 
     <header>
         <h1>My Dashboard</h1>
-        <p class="subtitle">✨ Gemini製造工具箱 ✨</p>
+        <p class="subtitle">✨ 貓貓蟲工具箱 ✨</p>
     </header>
 
     <main class="container" id="cardContainer">
@@ -419,6 +421,10 @@
                 <label>網址 (URL)</label>
                 <input type="url" id="linkUrl" placeholder="https://...">
             </div>
+            <div class="input-group">
+                <label>圖示連結 (Icon URL, 選填)</label>
+                <input type="url" id="linkIconUrl" placeholder="貼上喜歡的 Capoo 圖片網址...">
+            </div>
             <div class="modal-actions">
                 <button class="btn btn-cancel" onclick="closeModal()">取消</button>
                 <button class="btn btn-save" onclick="saveLink()">儲存喵</button>
@@ -427,16 +433,19 @@
     </div>
 
     <script>
+        // 設定預設連結 (更新為墨鏡咖波 & 跳舞咖波)
         const DEFAULT_LINKS = [
             { 
                 title: "Uber System", 
                 url: "https://bluebox585.github.io/system/Uber.html", 
-                customIcon: "🚗" 
+                // 墨鏡咖波 (Cool Sunglasses)
+                iconUrl: "https://media1.tenor.com/m/TopW9sJc9GAAAAAC/capoo-sunglasses.gif"
             },
             { 
                 title: "Crypto Monitor", 
                 url: "https://bluebox585.github.io/system/crypto.html", 
-                customIcon: "📊" 
+                // 跳舞咖波 (Dancing/Wiggle)
+                iconUrl: "https://media1.tenor.com/m/P_29z1C655EAAAAC/bugcat-capoo-dance.gif"
             }
         ];
 
@@ -446,8 +455,32 @@
 
         function initializeAndLoad() {
             let storedLinks = localStorage.getItem('myDashboardLinks');
+            
+            // 重要：為了讓你看到新的 GIF，如果 LocalStorage 裡面已經有舊的預設資料，
+            // 這裡我們會做一個簡單的檢查，強制更新前兩筆資料的 iconUrl
+            // 或是如果你想完全重置，可以把瀏覽器快取清掉
+            
             if (!storedLinks) {
                 localStorage.setItem('myDashboardLinks', JSON.stringify(DEFAULT_LINKS));
+            } else {
+                // 如果已經有資料，我們嘗試更新前兩筆系統預設的圖示
+                let links = JSON.parse(storedLinks);
+                let updated = false;
+
+                // 檢查第一筆是否為 Uber，是的話更新圖示
+                if (links.length > 0 && links[0].title === "Uber System") {
+                    links[0].iconUrl = DEFAULT_LINKS[0].iconUrl;
+                    updated = true;
+                }
+                // 檢查第二筆是否為 Crypto，是的話更新圖示
+                if (links.length > 1 && links[1].title === "Crypto Monitor") {
+                    links[1].iconUrl = DEFAULT_LINKS[1].iconUrl;
+                    updated = true;
+                }
+
+                if (updated) {
+                    localStorage.setItem('myDashboardLinks', JSON.stringify(links));
+                }
             }
             loadLinks();
         }
@@ -472,11 +505,19 @@
             a.target = '_blank';
 
             let iconHtml;
-            if (link.customIcon) {
+            
+            // 優先使用 iconUrl (圖片連結)
+            if (link.iconUrl) {
+                iconHtml = `<img src="${link.iconUrl}" alt="icon" onerror="this.onerror=null;this.src='https://cdn-icons-png.flaticon.com/512/616/616430.png'">`;
+            } 
+            // 舊版相容: customIcon (emoji)
+            else if (link.customIcon) {
                 iconHtml = `<span>${link.customIcon}</span>`;
-            } else {
+            } 
+            // 最後手段: 自動抓 Favicon
+            else {
                 const faviconUrl = `https://www.google.com/s2/favicons?domain=${link.url}&sz=64`;
-                iconHtml = `<img src="${faviconUrl}" alt="icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1006/1006771.png'">`;
+                iconHtml = `<img src="${faviconUrl}" alt="icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/616/616430.png'">`;
             }
 
             a.innerHTML = `
@@ -487,7 +528,7 @@
                 </div>
                 <div class="content">
                     <h2>${link.title}</h2>
-                    <p>${link.url.replace(/^https?:\/\//, '').substring(0, 25)}...</p>
+                    <p>${link.url.replace(/^https?:\/\//, '').substring(0, 20)}...</p>
                 </div>
             `;
             return a;
@@ -497,6 +538,7 @@
             const modal = document.getElementById('addModal');
             const titleInput = document.getElementById('linkTitle');
             const urlInput = document.getElementById('linkUrl');
+            const iconUrlInput = document.getElementById('linkIconUrl');
             const modalTitle = document.getElementById('modalTitle');
             
             currentEditIndex = index;
@@ -506,6 +548,7 @@
                 modalTitle.textContent = '新增捷徑';
                 titleInput.value = '';
                 urlInput.value = '';
+                iconUrlInput.value = '';
             } else {
                 const links = JSON.parse(localStorage.getItem('myDashboardLinks')) || [];
                 const link = links[index];
@@ -513,6 +556,7 @@
                     modalTitle.textContent = '編輯捷徑';
                     titleInput.value = link.title;
                     urlInput.value = link.url;
+                    iconUrlInput.value = link.iconUrl || ''; // 載入圖片連結
                 }
             }
             titleInput.focus();
@@ -531,6 +575,7 @@
         function saveLink() {
             const title = document.getElementById('linkTitle').value.trim();
             let url = document.getElementById('linkUrl').value.trim();
+            let iconUrl = document.getElementById('linkIconUrl').value.trim();
 
             if (!title || !url) {
                 alert('請輸入標題和網址！');
@@ -543,15 +588,12 @@
 
             const links = JSON.parse(localStorage.getItem('myDashboardLinks')) || [];
 
+            const newLinkData = { title, url, iconUrl };
+
             if (currentEditIndex === -1) {
-                links.push({ title, url });
+                links.push(newLinkData);
             } else {
-                const oldLink = links[currentEditIndex];
-                links[currentEditIndex] = {
-                    ...oldLink,
-                    title: title,
-                    url: url
-                };
+                links[currentEditIndex] = newLinkData;
             }
             
             localStorage.setItem('myDashboardLinks', JSON.stringify(links));
