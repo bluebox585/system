@@ -134,8 +134,8 @@
             backdrop-filter: var(--backdrop-blur);
             -webkit-backdrop-filter: var(--backdrop-blur);
             border: var(--glass-border);
-            border-radius: 24px;
-            padding: 20px;
+            border-radius: 60px; /* 修改這裡：改成大圓角，呈現橢圓/膠囊形狀 */
+            padding: 20px 35px; /* 修改這裡：增加左右內距，避免內容太靠近圓弧 */
             text-decoration: none;
             color: var(--text-main);
             box-shadow: var(--glass-shadow);
@@ -229,7 +229,7 @@
         /* 操作按鈕群組 */
         .action-btn {
             position: absolute;
-            top: 10px;
+            top: 15px; /* 修改這裡：配合圓弧造型稍微往下移 */
             width: 32px;
             height: 32px;
             border-radius: 50%;
@@ -246,12 +246,12 @@
         }
 
         .delete-btn {
-            right: 10px;
+            right: 20px; /* 修改這裡：配合圓弧造型稍微往左移 */
             color: #FF3B30;
         }
 
         .edit-btn {
-            right: 50px;
+            right: 60px; /* 修改這裡：配合圓弧造型稍微往左移 */
             color: #00A0E9;
         }
 
@@ -468,12 +468,12 @@
                 let updated = false;
 
                 // 檢查第一筆是否為 Uber，是的話更新圖示
-                if (links.length > 0 && links[0].title === "Uber System") {
+                if (links.length > 0 && links[0].title === "訂餐整理神器") {
                     links[0].iconUrl = DEFAULT_LINKS[0].iconUrl;
                     updated = true;
                 }
                 // 檢查第二筆是否為 Crypto，是的話更新圖示
-                if (links.length > 1 && links[1].title === "Crypto Monitor") {
+                if (links.length > 1 && links[1].title === "USDT出金試算") {
                     links[1].iconUrl = DEFAULT_LINKS[1].iconUrl;
                     updated = true;
                 }
