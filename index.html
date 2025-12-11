@@ -3,25 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的工具箱 | System Dashboard</title>
+    <title>我的工具箱 | Capoo Style</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="My Tools">
 
+    <!-- 引入可愛的圓體字型 -->
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --bg-color: #f3f4f6;
-            --card-bg: #ffffff;
-            --primary-color: #2563eb;
-            --text-main: #1f2937;
-            --text-sub: #6b7280;
-            --hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            /* 咖波風格配色 */
+            --bg-color: #E6F7FF;         /* 淺藍色背景 */
+            --card-bg: #FFFFFF;
+            --primary-color: #00A0E9;    /* 咖波藍 */
+            --accent-color: #FF99CC;     /* 肉球粉 */
+            --text-main: #004D66;        /* 深藍字體 */
+            --text-sub: #6699AA;
+            --hover-shadow: 0 12px 24px rgba(0, 160, 233, 0.2);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: 'Mali', 'Segoe UI', cursive, sans-serif; /* 使用圓圓的字體 */
             background-color: var(--bg-color);
+            background-image: radial-gradient(#Cceeff 2px, transparent 2px); /* 點點背景 */
+            background-size: 20px 20px;
             color: var(--text-main);
             margin: 0;
             padding: 0;
@@ -33,82 +40,101 @@
 
         header {
             width: 100%;
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            /* 咖波藍漸層 */
+            background: linear-gradient(180deg, #00A0E9 0%, #33B5E5 100%);
             color: white;
-            padding: 40px 20px;
+            padding: 40px 20px 50px 20px;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 160, 233, 0.3);
             margin-bottom: 30px;
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
+            /* 超圓潤的底部 */
+            border-bottom-left-radius: 50% 30px;
+            border-bottom-right-radius: 50% 30px;
+            position: relative;
         }
+
+        /* 裝飾 header 的小耳朵 (CSS 畫的) */
+        header::before, header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            width: 40px;
+            height: 40px;
+            background: #33B5E5;
+            border-radius: 50%;
+            z-index: -1;
+        }
+        header::before { left: 20%; }
+        header::after { right: 20%; }
 
         h1 {
             margin: 0;
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 700;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
         }
 
         p.subtitle {
             margin-top: 8px;
-            opacity: 0.9;
-            font-size: 0.95rem;
+            opacity: 0.95;
+            font-size: 1.1rem;
+            font-weight: 600;
         }
 
         .container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            gap: 25px; /* 間距加大一點 */
             width: 90%;
             max-width: 1000px;
             padding-bottom: 40px;
         }
 
-        /* 卡片基本樣式 */
+        /* 卡片圓潤化 */
         .card {
             background-color: var(--card-bg);
-            border-radius: 16px;
+            border-radius: 25px; /* 更圓的角 */
             padding: 20px;
             text-decoration: none;
             color: var(--text-main);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 160, 233, 0.1);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Q彈效果 */
             display: flex;
             align-items: center;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 3px solid transparent; /* 預留邊框位置 */
             position: relative;
             overflow: hidden;
             cursor: pointer;
         }
 
         .card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-8px) scale(1.02);
             box-shadow: var(--hover-shadow);
             border-color: var(--primary-color);
         }
 
         .icon-box {
-            width: 50px;
-            height: 50px;
-            background-color: #eff6ff;
-            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            background-color: #E0F7FA;
+            border-radius: 20px; /* 圓角矩形 */
             display: flex;
             align-items: center;
             justify-content: center;
             margin-right: 16px;
             flex-shrink: 0;
             overflow: hidden; 
+            border: 2px solid #B3E5FC;
         }
 
-        /* 讓圖片圖示適應大小 */
         .icon-box img {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             object-fit: contain;
         }
         
         .icon-box span {
-            font-size: 28px;
+            font-size: 32px;
         }
 
         .content {
@@ -118,8 +144,8 @@
 
         .content h2 {
             margin: 0 0 4px 0;
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.2rem;
+            font-weight: 700;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -127,180 +153,203 @@
 
         .content p {
             margin: 0;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: var(--text-sub);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            font-weight: 600;
         }
 
-        /* 新增按鈕樣式 */
+        /* 新增按鈕樣式 - 虛線框 */
         .add-card {
-            border: 2px dashed #cbd5e1;
-            background-color: transparent;
+            border: 3px dashed #B3E5FC;
+            background-color: rgba(255, 255, 255, 0.6);
             justify-content: center;
-            color: #64748b;
+            color: #00A0E9;
             box-shadow: none;
         }
         
         .add-card:hover {
             border-color: var(--primary-color);
-            color: var(--primary-color);
-            background-color: rgba(37, 99, 235, 0.05);
+            background-color: #E1F5FE;
         }
 
         .add-icon {
-            font-size: 24px;
+            font-size: 28px;
             margin-right: 10px;
+            font-weight: bold;
         }
 
-        /* 操作按鈕群組 (編輯與刪除) */
+        /* 操作按鈕群組 */
         .action-btn {
             position: absolute;
             top: 0;
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
             opacity: 0;
             transition: all 0.2s;
             z-index: 10;
-            background: rgba(255, 255, 255, 0.95);
+            background: #FFFFFF;
             cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* 刪除按鈕 */
+        /* 刪除按鈕 - 粉紅色 */
         .delete-btn {
             right: 0;
-            color: #ef4444;
-            border-bottom-left-radius: 12px;
-            font-size: 20px;
+            color: #FF5588;
+            border-bottom-left-radius: 15px;
+            font-size: 22px;
         }
 
-        /* 編輯按鈕 */
+        /* 編輯按鈕 - 藍色 */
         .edit-btn {
-            right: 40px; /* 放在刪除按鈕左邊 */
-            color: #3b82f6;
-            border-bottom-left-radius: 12px;
-            font-size: 18px;
-            border-right: 1px solid #f3f4f6; /* 分隔線 */
+            right: 45px;
+            color: #00A0E9;
+            border-bottom-left-radius: 15px;
+            font-size: 20px;
+            border-right: 2px solid #E6F7FF;
         }
 
-        /* 滑鼠移過去才顯示按鈕 */
         .card:hover .action-btn {
             opacity: 1;
         }
         
         .action-btn:hover {
-            background-color: #f3f4f6;
+            background-color: #F0FAFF;
+            transform: scale(1.1); /* 按鈕 hover 放大 */
         }
         
         .delete-btn:hover {
-            background-color: #fee2e2;
+            background-color: #FFE6EE;
+            color: #FF0044;
         }
 
-        /* 手機版設定：按鈕預設顯示半透明 */
         @media (max-width: 600px) {
             .action-btn {
-                opacity: 0.6;
-                background: rgba(255, 255, 255, 0.8);
+                opacity: 0.8;
+                background: rgba(255, 255, 255, 0.95);
             }
         }
 
-        /* Modal 彈窗樣式 */
+        /* Modal 彈窗樣式 - 超可愛版 */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 77, 102, 0.6); /* 深藍半透明遮罩 */
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            backdrop-filter: blur(2px);
+            backdrop-filter: blur(4px);
         }
 
         .modal {
             background: white;
             padding: 30px;
-            border-radius: 20px;
-            width: 90%;
+            border-radius: 30px; /* 更圓 */
+            width: 85%;
             max-width: 400px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            animation: modalPop 0.3s ease-out;
+            box-shadow: 0 25px 50px -12px rgba(0, 160, 233, 0.25);
+            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 彈跳效果 */
+            border: 4px solid #B3E5FC;
         }
 
         @keyframes modalPop {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            from { transform: scale(0.8) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
         }
 
         .modal h3 {
             margin-top: 0;
-            color: var(--text-main);
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 1.5rem;
         }
 
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .input-group label {
             display: block;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            color: var(--text-sub);
+            margin-bottom: 8px;
+            font-size: 1rem;
+            color: var(--text-main);
+            font-weight: 700;
+            margin-left: 5px;
         }
 
         .input-group input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            padding: 12px 15px;
+            border: 2px solid #B3E5FC;
+            border-radius: 15px;
             font-size: 1rem;
             box-sizing: border-box;
+            font-family: 'Mali', sans-serif;
+            transition: border-color 0.2s;
+            color: var(--text-main);
         }
         
         .input-group input:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background-color: #F0FAFF;
         }
 
         .modal-actions {
             display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
+            justify-content: center; /* 按鈕置中 */
+            gap: 15px;
+            margin-top: 25px;
         }
 
         .btn {
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 12px 30px;
+            border-radius: 50px; /* 藥丸形狀 */
             border: none;
             cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 500;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'Mali', sans-serif;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
         }
 
         .btn-cancel {
-            background: #f3f4f6;
-            color: var(--text-sub);
+            background: #E0E0E0;
+            color: #666;
         }
 
         .btn-save {
             background: var(--primary-color);
             color: white;
+            box-shadow: 0 4px 10px rgba(0, 160, 233, 0.3);
         }
 
         footer {
             margin-top: auto;
-            padding: 20px;
-            font-size: 0.8rem;
+            padding: 30px;
+            font-size: 0.9rem;
             color: var(--text-sub);
             text-align: center;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -308,7 +357,7 @@
 
     <header>
         <h1>My Dashboard</h1>
-        <p class="subtitle">個人網頁工具彙整</p>
+        <p class="subtitle">✨ Gemini製造工具箱 ✨</p>
     </header>
 
     <main class="container" id="cardContainer">
@@ -323,7 +372,7 @@
     </main>
 
     <footer>
-        <p>Tip: 使用 ✎ 編輯，× 刪除捷徑</p>
+        <p>Tip: 使用 ✎ 編輯，× 刪除捷徑 ( ⓛ ω ⓛ *)</p>
     </footer>
 
     <!-- 編輯/新增捷徑的彈窗 -->
@@ -331,8 +380,8 @@
         <div class="modal">
             <h3 id="modalTitle">新增網頁捷徑</h3>
             <div class="input-group">
-                <label>標題</label>
-                <input type="text" id="linkTitle" placeholder="例如：Google">
+                <label>標題 (Title)</label>
+                <input type="text" id="linkTitle" placeholder="例如：可愛的 Google">
             </div>
             <div class="input-group">
                 <label>網址 (URL)</label>
@@ -340,7 +389,7 @@
             </div>
             <div class="modal-actions">
                 <button class="btn btn-cancel" onclick="closeModal()">取消</button>
-                <button class="btn btn-save" onclick="saveLink()">儲存</button>
+                <button class="btn btn-save" onclick="saveLink()">儲存喵</button>
             </div>
         </div>
     </div>
@@ -359,7 +408,6 @@
             }
         ];
 
-        // 追蹤當前正在編輯的 Index，-1 代表是新增模式
         let currentEditIndex = -1;
 
         document.addEventListener('DOMContentLoaded', initializeAndLoad);
@@ -399,7 +447,6 @@
                 iconHtml = `<img src="${faviconUrl}" alt="icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1006/1006771.png'">`;
             }
 
-            // 加入編輯(edit-btn)與刪除(delete-btn)按鈕
             a.innerHTML = `
                 <div class="action-btn edit-btn" onclick="editLink(event, ${index})" title="編輯">✎</div>
                 <div class="action-btn delete-btn" onclick="deleteLink(event, ${index})" title="刪除">×</div>
@@ -414,7 +461,6 @@
             return a;
         }
 
-        // 開啟彈窗 (index為-1是新增，否則為編輯)
         function openModal(index) {
             const modal = document.getElementById('addModal');
             const titleInput = document.getElementById('linkTitle');
@@ -425,12 +471,10 @@
             modal.style.display = 'flex';
 
             if (index === -1) {
-                // 新增模式
                 modalTitle.textContent = '新增網頁捷徑';
                 titleInput.value = '';
                 urlInput.value = '';
             } else {
-                // 編輯模式：讀取現有資料
                 const links = JSON.parse(localStorage.getItem('myDashboardLinks')) || [];
                 const link = links[index];
                 if (link) {
@@ -468,11 +512,8 @@
             const links = JSON.parse(localStorage.getItem('myDashboardLinks')) || [];
 
             if (currentEditIndex === -1) {
-                // 新增
                 links.push({ title, url });
             } else {
-                // 修改
-                // 保留原本的 customIcon (如果有的話)
                 const oldLink = links[currentEditIndex];
                 links[currentEditIndex] = {
                     ...oldLink,
@@ -490,7 +531,7 @@
             event.preventDefault();
             event.stopPropagation();
 
-            if (confirm('確定要刪除這個捷徑嗎？')) {
+            if (confirm('確定要吃掉(刪除)這個捷徑嗎？')) {
                 const links = JSON.parse(localStorage.getItem('myDashboardLinks')) || [];
                 links.splice(index, 1);
                 localStorage.setItem('myDashboardLinks', JSON.stringify(links));
