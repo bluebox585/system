@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幸運夾娃娃機 - 尾牙抽獎 (活潑版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            overflow: hidden;
+            background-color: #2d3748;
+        }
+
+        /* 機台外觀 */
+        .machine-cabinet {
+            background: linear-gradient(to bottom, #fce7f3 0%, #fbcfe8 100%);
+            border: 12px solid #f472b6;
+            border-radius: 30px;
+            box-shadow: 0 0 40px rgba(244, 114, 182, 0.4);
+            position: relative;
+        }
+
+        .glass-window {
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.4) 0%, rgba(219, 234, 254, 0.2) 100%);
+            border: 4px solid white;
+            position: relative;
+            overflow: hidden;
+            border-radius: 15px;
+            margin: 20px;
+            margin-bottom: 0;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        /* --- 全新簡約爪子結構 --- */
+        .claw-assembly {
+            position: absolute;
+            top: 20px; /* 初始位置 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px; /* 爪子寬度 */
+            height: 60px;
+            z-index: 20;
+            /* 移除 transition，改由 JS 控制動畫以確保同步 */
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+        }
+
+        /* 往上無限延伸的線 (視覺騙術) */
+        .infinite-rod {
+            position: absolute;
+            bottom: 100%; /* 從爪子頂部開始往上 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px; /* 細線 */
+            height: 1000px; /* 足夠長超出螢幕 */
+            background: #94a3b8; /* 銀灰色 */
+            z-index: 1;
+        }
+
+        /* 爪子手指 */
+        .claw-finger {
+            width: 40px;
+            height: 60px;
+            border: 5px solid #cbd5e0; /* 略粗一點的線條 */
+            position: absolute;
+            top: 0;
+            background: transparent;
+            border-top: none;
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 2;
+        }
+
+        .claw-left {
+            left: 0;
+            border-right: none;
+            border-radius: 0 0 0 50px; /* 左半圓弧 */
+            transform-origin: top right; /* 旋轉軸心在頂部中間 */
+            transform: rotate(10deg);
+        }
+
+        .claw-right {
+            right: 0;
+            border-left: none;
+            border-radius: 0 0 50px 0; /* 右半圓弧 */
+            transform-origin: top left; /* 旋轉軸心在頂部中間 */
+            transform: rotate(-10deg);
+        }
+
+        /* 中心連接點 (極簡的小圓點) */
+        .claw-pivot {
+            position: absolute;
+            top: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            z-index: 3;
+        }
+
+        /* 抓取動作 */
+        .grabbing .claw-left { transform: rotate(35deg); }
+        .grabbing .claw-right { transform: rotate(-35deg); }
+
+        /* 扭蛋與其他樣式保持不變 */
+        .capsule-pit {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 250px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-end;
+            justify-content: center;
+            padding: 10px;
+            pointer-events: none;
+        }
+
+        .capsule {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.1), 2px 2px 5px rgba(255,255,255,0.4);
+            position: relative;
+            border: 2px solid rgba(255,255,255,0.6);
+        }
+        .capsule::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 0; width: 100%; height: 50%;
+            background: rgba(255,255,255,0.5);
+            border-radius: 0 0 50px 50px;
+        }
+        .capsule-wrapper { width: 48px; height: 48px; margin: -6px; position: relative; }
+        
+        .held-capsule {
+            position: absolute;
+            top: 25px; /* 膠囊位置調整到爪子中心 */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+            display: none;
+            margin: 0;
+        }
+
+        /* 修改後的晃動動畫：更活潑的攪拌感 */
+        @keyframes rumble {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-3px, -5px) rotate(-5deg); }
+            40% { transform: translate(3px, -2px) rotate(4deg); }
+            60% { transform: translate(-4px, -4px) rotate(-3deg); }
+            80% { transform: translate(2px, -6px) rotate(5deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        .rumble-anim { animation: rumble 1.2s infinite ease-in-out; }
+
+        .pop-open { animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .shine-effect {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 50;
+        }
+        .flash { animation: flashAnim 0.2s linear; }
+        @keyframes flashAnim { 0% { opacity: 0; } 50% { opacity: 0.8; } 100% { opacity: 0; } }
+    </style>
+</head>
+<body class="h-screen w-screen flex items-center justify-center">
+
+    <div class="relative w-full max-w-4xl h-[95vh] flex flex-col items-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-pink-300 mb-4 tracking-wider drop-shadow-md text-center">
+            ✨ 幸運夾夾樂 ✨
+        </h1>
+
+        <div class="machine-cabinet w-full h-full flex flex-col relative overflow-hidden bg-white">
+            <div class="glass-window flex-1 relative" id="game-area">
+                
+                <!-- 爪子總成 -->
+                <div class="claw-assembly" id="claw">
+                    <!-- 往上的線 -->
+                    <div class="infinite-rod"></div>
+                    <!-- 中心點 -->
+                    <div class="claw-pivot"></div>
+                    <!-- 左爪 -->
+                    <div class="claw-finger claw-left"></div>
+                    <!-- 右爪 -->
+                    <div class="claw-finger claw-right"></div>
+                    <!-- 被抓的膠囊 -->
+                    <div class="capsule bg-yellow-400 held-capsule" id="held-capsule"></div>
+                </div>
+
+                <div class="capsule-pit" id="capsule-pit"></div>
+                <div class="shine-effect" id="shine"></div>
+            </div>
+
+            <div class="h-32 bg-pink-400 flex items-center justify-between px-8 border-t-8 border-pink-500 relative z-30">
+                <div class="w-32 h-24 bg-pink-800 rounded-t-lg border-4 border-pink-600 relative top-4 flex items-center justify-center">
+                    <span class="text-pink-200 text-xs font-bold mt-8">PRIZE</span>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="toggleSettings()" class="bg-pink-600 hover:bg-pink-500 text-white font-bold py-2 px-4 rounded-full border-b-4 border-pink-800 active:border-b-0 active:translate-y-1 transition text-sm">
+                        ⚙️ 設定名單
+                    </button>
+                    <button id="start-btn" onclick="startGame()" class="bg-yellow-400 hover:bg-yellow-300 text-yellow-900 font-bold py-4 px-12 rounded-full border-b-8 border-yellow-600 active:border-b-0 active:translate-y-2 transition text-2xl shadow-lg animate-pulse">
+                        開始夾取
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden backdrop-blur-sm">
+        <div id="modal-content" class="bg-white rounded-3xl p-10 text-center max-w-md w-full transform scale-0 relative border-8 border-pink-200 shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            <div class="mb-4">
+                <div class="w-20 h-20 mx-auto bg-yellow-100 rounded-full flex items-center justify-center mb-2 text-4xl">🎁</div>
+                <h2 class="text-xl text-gray-500 font-bold">恭喜中獎！</h2>
+            </div>
+            <div class="border-t-2 border-b-2 border-dashed border-gray-200 py-6 my-4 flex flex-col justify-center items-center gap-2">
+                <p id="winner-id" class="text-7xl text-gray-800 font-black font-mono drop-shadow-md leading-tight">000</p>
+                <p id="winner-unit" class="text-2xl text-pink-400 font-bold">部門名稱</p>
+                <p id="winner-name" class="text-5xl text-pink-600 font-black tracking-wider">王大明</p>
+            </div>
+            <button onclick="closeModal()" class="mt-2 bg-blue-400 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-full text-lg shadow-md transition">確認</button>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 max-w-lg w-full shadow-2xl">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">📋 編輯抽獎名單</h3>
+            <textarea id="name-list-input" class="w-full h-64 p-3 border border-gray-300 rounded bg-gray-50 font-mono text-sm focus:ring-2 focus:ring-pink-400 outline-none"></textarea>
+            <div class="flex justify-end gap-3 mt-4">
+                <button onclick="toggleSettings()" class="text-gray-500 hover:text-gray-700 px-4 py-2">取消</button>
+                <button onclick="saveList()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded shadow">儲存</button>
+            </div>
+            <p class="text-xs text-right text-gray-400 mt-2">共 <span id="count-display">0</span> 位</p>
+        </div>
+    </div>
+
+    <script>
+        let participants = [
+            "001 區域環境品質規劃科 張丁晉", "002 區域環境品質規劃科 蔡進偉", "003 區域環境品質規劃科 廖淑吟",
+            "004 區域環境品質規劃科 洪珮綺", "005 區域環境品質規劃科 謝汶諭", "006 區域環境品質規劃科 鄭仁泰",
+            "007 區域環境品質規劃科 王燕鳳", "008 區域環境品質規劃科 鄧海一", "009 區域環境品質規劃科 蕭億霖"
+        ];
+        let isAnimating = false;
+
+        window.onload = function() { renderCapsules(); updateCountDisplay(); };
+
+        function renderCapsules() {
+            const pit = document.getElementById('capsule-pit');
+            pit.innerHTML = '';
+            const count = 75; 
+            const colors = ['bg-red-400', 'bg-blue-400', 'bg-green-400', 'bg-yellow-300', 'bg-purple-400', 'bg-pink-400', 'bg-orange-300'];
+            for (let i = 0; i < count; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'capsule-wrapper';
+                const rotate = Math.random() * 360;
+                const x = (Math.random() - 0.5) * 20;
+                const y = (Math.random() - 0.5) * 20;
+                wrapper.style.transform = `rotate(${rotate}deg) translate(${x}px, ${y}px)`;
+                const capsule = document.createElement('div');
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                capsule.className = `capsule ${color} rumble-anim`;
+                capsule.style.animationDelay = `-${Math.random() * 2}s`;
+                wrapper.appendChild(capsule);
+                pit.appendChild(wrapper);
+            }
+        }
+
+        // 動畫輔助函數：平滑移動
+        function animateElement(element, property, start, end, duration, easing = 'ease-in-out') {
+            return new Promise(resolve => {
+                element.style.transition = `${property} ${duration}ms ${easing}`;
+                // 強制重繪
+                element.offsetHeight; 
+                element.style[property] = end;
+                setTimeout(resolve, duration);
+            });
+        }
+
+        async function startGame() {
+            if (isAnimating) return;
+            if (participants.length === 0) { alert("名單為空！"); return; }
+            isAnimating = true;
+            document.getElementById('start-btn').classList.add('opacity-50', 'cursor-not-allowed');
+            
+            const randomIndex = Math.floor(Math.random() * participants.length);
+            const winnerData = participants[randomIndex];
+            let winnerId = "", winnerUnit = "", winnerName = winnerData;
+            const parts = winnerData.trim().split(/\s+/);
+            if (parts.length >= 3) { winnerId = parts[0]; winnerUnit = parts[1]; winnerName = parts.slice(2).join(" "); }
+            else if (parts.length === 2) { winnerId = parts[0]; winnerUnit = ""; winnerName = parts[1]; }
+
+            playSound('motor'); 
+            const claw = document.getElementById('claw');
+            const heldCapsule = document.getElementById('held-capsule');
+            const gameArea = document.getElementById('game-area'); 
+            
+            heldCapsule.style.display = 'none';
+            claw.classList.remove('grabbing');
+            
+            // 1. 移動到隨機 X 位置
+            const randomLeft = 20 + Math.random() * 60;
+            // 先確保 Top 在上方
+            claw.style.top = '20px';
+            await animateElement(claw, 'left', '50%', `${randomLeft}%`, 1000);
+
+            // 2. 下抓 (整組下降)
+            // 計算底部位置 (視窗高 - 膠囊區高 + 一點緩衝)
+            const dropTop = gameArea.clientHeight - 80; 
+            await animateElement(claw, 'top', '20px', `${dropTop}px`, 1500, 'ease-in');
+
+            // 3. 抓取
+            playSound('grab');
+            claw.classList.add('grabbing');
+            await wait(500);
+
+            const colors = ['bg-red-400', 'bg-blue-400', 'bg-green-400', 'bg-yellow-300', 'bg-purple-400', 'bg-pink-400'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            heldCapsule.className = `capsule held-capsule ${randomColor}`;
+            heldCapsule.style.display = 'block';
+            await wait(500);
+
+            // 4. 上升
+            playSound('motor');
+            await animateElement(claw, 'top', `${dropTop}px`, '20px', 1500, 'ease-out');
+
+            // 5. 歸位
+            await animateElement(claw, 'left', `${randomLeft}%`, '50%', 1000);
+
+            // 6. 掉落
+            claw.classList.remove('grabbing');
+            // 這裡不移動爪子，而是單獨移動膠囊掉落
+            heldCapsule.style.transition = "top 0.5s ease-in";
+            heldCapsule.style.top = "400px"; 
+            await wait(300);
+            
+            document.getElementById('shine').classList.add('flash');
+            playSound('pop');
+            await wait(1500);
+
+            showResult(winnerId, winnerUnit, winnerName);
+            document.getElementById('shine').classList.remove('flash');
+
+            isAnimating = false;
+            document.getElementById('start-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+            
+            // 重置膠囊位置以便下次顯示
+            setTimeout(() => {
+                heldCapsule.style.transition = 'none';
+                heldCapsule.style.top = '25px';
+            }, 1000);
+        }
+
+        function showResult(id, unit, name) {
+            const modal = document.getElementById('result-modal');
+            const content = document.getElementById('modal-content');
+            document.getElementById('winner-id').innerText = id || '';
+            document.getElementById('winner-unit').innerText = unit || '';
+            document.getElementById('winner-name').innerText = name;
+            document.getElementById('winner-unit').style.display = unit ? 'block' : 'none';
+            modal.classList.remove('hidden');
+            content.classList.add('pop-open');
+            playSound('win');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('result-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.add('hidden');
+            content.classList.remove('pop-open');
+            document.getElementById('held-capsule').style.display = 'none';
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settings-modal');
+            const input = document.getElementById('name-list-input');
+            if (modal.classList.contains('hidden')) {
+                input.value = participants.join('\n');
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+        function saveList() {
+            const input = document.getElementById('name-list-input');
+            const text = input.value.trim();
+            if (!text) { alert("請輸入名單！"); return; }
+            participants = text.split('\n').filter(line => line.trim() !== '');
+            updateCountDisplay();
+            toggleSettings();
+            alert(`已儲存！共有 ${participants.length} 位參加者。`);
+        }
+        function updateCountDisplay() { document.getElementById('count-display').innerText = participants.length; }
+        function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'motor') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now); osc.frequency.linearRampToValueAtTime(150, now + 1);
+                gainNode.gain.setValueAtTime(0.05, now); gainNode.gain.linearRampToValueAtTime(0, now + 1.2);
+                osc.start(now); osc.stop(now + 1.2);
+            } else if (type === 'grab') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+                gainNode.gain.setValueAtTime(0.05, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'pop') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'win') {
+                playNote(523.25, now, 0.1); playNote(659.25, now + 0.1, 0.1);
+                playNote(783.99, now + 0.2, 0.1); playNote(1046.50, now + 0.3, 0.4);
+            }
+        }
+        function playNote(freq, time, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine'; osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.1, time); gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+            osc.start(time); osc.stop(time + duration);
+        }
+    </script>
+</body>
+</html>
